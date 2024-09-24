@@ -13,6 +13,21 @@ const urls = [
   'http://cdn.1678520.xyz/epg/',
   'https://ali-m-l.cztv.com/channels/lantian/channel006/1080p.m3u8',
   'https://epg.112114.free.hr/pp.xml',
+  'http://cdn.1678520.xyz/xml',
+  'https://epg.112114.free.hr',
+  'http://cdn.1678520.xyz/epg/',
+  'https://ali-m-l.cztv.com/channels/lantian/channel006/1080p.m3u8',
+  'https://epg.112114.free.hr/pp.xml',
+  'http://cdn.1678520.xyz/xml',
+  'https://epg.112114.free.hr',
+  'http://cdn.1678520.xyz/epg/',
+  'https://ali-m-l.cztv.com/channels/lantian/channel006/1080p.m3u8',
+  'https://epg.112114.free.hr/pp.xml',
+  'http://cdn.1678520.xyz/xml',
+  'https://epg.112114.free.hr',
+  'http://cdn.1678520.xyz/epg/',
+  'https://ali-m-l.cztv.com/channels/lantian/channel006/1080p.m3u8',
+  'https://epg.112114.free.hr/pp.xml',
   'http://cdn.1678520.xyz/xml'
 ];
 const startTime = Date.now();
