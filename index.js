@@ -12,22 +12,23 @@ function getNetworkSpeed(interfaceName) {
   fs.readFile('/proc/net/dev', 'utf8', (err, data) => {
     if (err) {
       console.error(`Error reading /proc/net/dev: ${err}`);
-      return;
+      return {
+        speedRx: 0,
+        speedTx: 0
+      };
     }
 
     const lines = data.trim().split('\n').slice(2); // 跳过前两行标题
     const interfaceData = lines.find((line) => line.includes(interfaceName));
-
     if (interfaceData) {
       const values = interfaceData.trim().split(/\s+/);
       const rxBytes = parseInt(values[1]);
       const txBytes = parseInt(values[9]);
       const speedRx = rxBytes / 1024; // 接收速度，单位为KB
       const speedTx = txBytes / 1024; // 发送速度，单位为KB
-
-      console.log(`Interface ${interfaceName} - Receive speed: ${speedRx} KB/s, Transmit speed: ${speedTx} KB/s`);
+      return { speedRx, speedTx };
     } else {
-      console.log(`Interface ${interfaceName} not found in /proc/net/dev`);
+      return { speedRx: 0, speedTx: 0 };
     }
   });
 }
