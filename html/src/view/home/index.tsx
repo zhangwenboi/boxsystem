@@ -1,17 +1,28 @@
 import { StatisticCard } from "@ant-design/pro-components"
 import { EllipsisOutlined } from "@ant-design/icons"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import request from "../../api"
+import { intervalRequest } from "../../uitls"
 export default () => {
-    useEffect(() => {
-        request.get('/api/system-info').then((res) => {
-            console.log(res)
+    const [systemInfo, setSystemInfo] = useState<SystemInfo>()
+    const getData = () => {
+        request.get<ResponseData<SystemInfo>>('/api/system-info').then((res) => {
+
+            if (res.code === 200) {
+                setSystemInfo(res.data)
+                console.log("🚀 ~ res.data:", res);
+            }
+
         })
-    })
+    }
+    useEffect(() => {
+        getData()
+    }, [])
 
     return <div>
         <StatisticCard
             title="大盘趋势"
+
             tooltip="大盘说明"
             style={{ maxWidth: 480 }}
             extra={<EllipsisOutlined />}

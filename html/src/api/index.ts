@@ -33,7 +33,6 @@ const errorHandler = (error: any): Response => {
         return error
     }
     const { response } = error;
-    console.log("🚀 ~ response:", response);
 
     if (response && response.status) {
         const errorText = codeMessage[response.status] || response.statusText;
