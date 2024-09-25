@@ -7,6 +7,7 @@ bin-release/
 node_modules
 html
 dist
+.git
 
 # Other files and folders
 .settings/
