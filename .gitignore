@@ -4,6 +4,10 @@ bin-release/
 [Oo]bj/
 [Bb]in/
 
+node_modules
+html
+dist
+
 # Other files and folders
 .settings/
 
