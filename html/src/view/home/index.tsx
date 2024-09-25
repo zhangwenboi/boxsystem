@@ -16,7 +16,9 @@ export default () => {
         })
     }
     useEffect(() => {
-        getData()
+        intervalRequest(getData, 2000, () => {
+            return true
+        })
     }, [])
 
     return <div>
