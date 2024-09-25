@@ -1,0 +1,132 @@
+{
+    "linux": {
+        "exectime": 30
+    },
+    "windows": {
+        "config": {
+            "amsidump": true,
+            "dist_master_storage_only": false,
+            "dlnexec": false,
+            "during_script": true,
+            "kernel": false,
+            "linux_on_gui": false,
+            "memory": false,
+            "pre_script": true,
+            "procmemory": true,
+            "tags": true,
+            "timeout": 300,
+            "tlp": false,
+            "url_analysis": false
+        },
+        "machines": [
+            [
+                "",
+                "First available"
+            ],
+            [
+                "Windows7x64_1",
+                "Windows7x64_1:x86:windows_7_64,acrobat_reader_6"
+            ],
+            [
+                "Windows7x64_2",
+                "Windows7x64_2:x64:windows_xp_sp3,acrobat_reader_6"
+            ],
+            [
+                "Windows7x64_3",
+                "Windows7x64_3:x64"
+            ],
+            [
+                "Windows7x64_4",
+                "Windows7x64_4:x64"
+            ],
+            [
+                "Windows7x64_5",
+                "Windows7x64_5:x64"
+            ],
+            [
+                "Windows7x64_6",
+                "Windows7x64_6:x86"
+            ],
+            [
+                "Windows7x64_7",
+                "Windows7x64_7:x86"
+            ],
+            [
+                "Windows7x64_8",
+                "Windows7x64_8:x86"
+            ]
+        ],
+        "packages": [
+            "Shellcode",
+            "Shellcode-Unpacker",
+            "Shellcode_x64",
+            "UPX",
+            "UPX_dll",
+            "Unpacker",
+            "Unpacker_dll",
+            "Unpacker_js",
+            "Unpacker_ps1",
+            "Unpacker_regsvr",
+            "Unpacker_zip",
+            "access",
+            "applet",
+            "archive",
+            "chm",
+            "chrome",
+            "cpl",
+            "dll",
+            "doc",
+            "doc2016",
+            "doc_antivm",
+            "edge",
+            "eml",
+            "exe",
+            "firefox",
+            "generic",
+            "hta",
+            "html",
+            "hwp",
+            "ichitaro",
+            "ie",
+            "inp",
+            "jar",
+            "js",
+            "js_antivm",
+            "lnk",
+            "mht",
+            "msbuild",
+            "msg",
+            "msi",
+            "msix",
+            "nsis",
+            "ollydbg",
+            "one",
+            "pdf",
+            "ppt",
+            "ppt2016",
+            "ps1",
+            "ps1_x64",
+            "pub",
+            "pub2016",
+            "python",
+            "rar",
+            "reg",
+            "regsvr",
+            "sct",
+            "service",
+            "service_dll",
+            "swf",
+            "vawtrak",
+            "vbejse",
+            "vbs",
+            "wsf",
+            "xls",
+            "xls2016",
+            "xps",
+            "xslt",
+            "zip",
+            "zip_compound"
+        ],
+        "tags": []
+    }
+}

@@ -11,5 +11,8 @@
     "url": "https://gitee.com/wen_wen_okok/downanyfiles.git"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.0"
+  }
 }
