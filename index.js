@@ -5,48 +5,38 @@ const os = require('os');
 
 const app = express();
 const port = 3000;
+
 const fs = require('fs');
 
-const { exec } = require('child_process');
-
 function getNetworkSpeed(interfaceName) {
-  exec(`ifconfig ${interfaceName}`, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Error executing ifconfig: ${error.message}`);
-      return;
-    }
-    if (stderr) {
-      console.error(`ifconfig stderr: ${stderr}`);
+  fs.readFile('/proc/net/dev', 'utf8', (err, data) => {
+    if (err) {
+      console.error(`Error reading /proc/net/dev: ${err}`);
       return;
     }
 
-    const output = stdout.toString();
-    const lines = output.split('\n');
+    const lines = data.trim().split('\n').slice(2); // 跳过前两行标题
+    const interfaceData = lines.find((line) => line.includes(interfaceName));
 
-    let rxSpeed = 0;
-    let txSpeed = 0;
+    if (interfaceData) {
+      const values = interfaceData.trim().split(/\s+/);
+      const rxBytes = parseInt(values[1]);
+      const txBytes = parseInt(values[9]);
+      const speedRx = rxBytes / 1024; // 接收速度，单位为KB
+      const speedTx = txBytes / 1024; // 发送速度，单位为KB
 
-    lines.forEach((line) => {
-      if (line.includes('RX bytes')) {
-        rxSpeed = parseInt(line.split('RX bytes:')[1].split(' ')[0]) / 1024; // 接收速度，单位为KB
-      }
-      if (line.includes('TX bytes')) {
-        txSpeed = parseInt(line.split('TX bytes:')[1].split(' ')[0]) / 1024; // 发送速度，单位为KB
-      }
-    });
-
-    return { rxSpeed, txSpeed };
+      console.log(`Interface ${interfaceName} - Receive speed: ${speedRx} KB/s, Transmit speed: ${speedTx} KB/s`);
+    } else {
+      console.log(`Interface ${interfaceName} not found in /proc/net/dev`);
+    }
   });
 }
 
-// 传入网络接口名称，例如 eth0
-getNetworkSpeed('eth0');
 app.get('/api/system-info', async (req, res) => {
   try {
     const networkInterfaces = os.networkInterfaces();
     // 获取网速
     const networkSpeeds = Object.keys(networkInterfaces).map((interfaceName) => getNetworkSpeed(interfaceName));
-    console.log('🚀 ~ networkSpeeds:', networkSpeeds);
 
     const systemInfo = {
       operatingSystem: os.type(),
