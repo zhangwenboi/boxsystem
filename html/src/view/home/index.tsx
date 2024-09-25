@@ -1,6 +1,13 @@
 import { StatisticCard } from "@ant-design/pro-components"
 import { EllipsisOutlined } from "@ant-design/icons"
+import { useEffect } from "react"
+import request from "../../api"
 export default () => {
+    useEffect(() => {
+        request.get('/api/system-info').then((res) => {
+            console.log(res)
+        })
+    })
 
     return <div>
         <StatisticCard

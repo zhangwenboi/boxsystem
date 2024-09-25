@@ -6,7 +6,7 @@ const os = require('os');
 const app = express();
 const port = 3000;
 
-app.get('/system-info', (req, res) => {
+app.get('/api/system-info', (req, res) => {
   const systemInfo = {
     operatingSystem: os.type(),
     release: os.release(),

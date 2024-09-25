@@ -4,7 +4,6 @@
  */
 import { extend } from 'umi-request';
 import { message } from 'antd';
-import { getCookies, clearCookie } from '../uitls/index'
 
 const codeMessage = {
     200: '服务器成功返回请求的数据。',
@@ -28,13 +27,14 @@ const codeMessage = {
  * 异常处理程序
  */
 const errorHandler = (error: any): Response => {
-    console.log("🚀 ~ error:", error);
 
 
     if (error.request.options.responseType === 'blob') {
         return error
     }
     const { response } = error;
+    console.log("🚀 ~ response:", response);
+
     if (response && response.status) {
         const errorText = codeMessage[response.status] || response.statusText;
         const { status, url } = response;
@@ -45,16 +45,9 @@ const errorHandler = (error: any): Response => {
             noParamUrl = url.substring(0, url.indexOf('?'));
         }
 
-        // if (url.indexOf('/system/oauth/token') !== -1) {
-        //     message.error(`请求错误 [20002]: ${noParamUrl}账号不存在或密码错误`);
-        //     return response;
-        // }
-        if (status === 401) {
-            message.warning('请重新登陆!');
-            clearCookie();
-        } else {
-            message.error(`请求错误 [${status}]: ${noParamUrl}${errorText}`);
-        }
+
+        message.error(`请求错误 [${status}]: ${noParamUrl}${errorText}`);
+
     } else if (!response) {
         message.error('您的网络发生异常，无法连接服务器');
     }
@@ -73,17 +66,17 @@ const request = extend({
 /**
  * 所以请求拦截器
  */
-request.interceptors.request.use((url, options): any => {
-    return {
-        url,
-        options: {
-            ...options,
-            headers: {
-                Authorization: getCookies()?.replaceAll('"', ''),
-            },
-        },
-    };
-});
+// request.interceptors.request.use((url, options): any => {
+//     return {
+//         url,
+//         options: {
+//             ...options,
+//             headers: {
+//                 Authorization: getCookies()?.replaceAll('"', ''),
+//             },
+//         },
+//     };
+// });
 
 /**
  * 所有响应拦截器
@@ -94,21 +87,10 @@ request.interceptors.response.use(async (response, options): Promise<any> => {
         return response
     }
 
-    const { url, status } = response;
+    const { status } = response;
 
-    const data = await response.clone().json();
     // console.log(data)
-    if ((status === 200 && data.code !== 1000)) {
-        // 处理参数问题
-        let noParamUrl = url;
-        if (url.indexOf('?') !== -1) {
-            noParamUrl = url.substring(0, url.indexOf('?'));
-        }
-        const content = (data.data === null || isEmpty(data?.data?.exceptionMsg)) ? data.msg : data.data.exceptionMsg;
-        message.error({
-            content
-        });
-    } else if ((status === 500)) {
+    if ((status === 500)) {
         message.error({
             content: '网络错误'
         });
@@ -118,6 +100,4 @@ request.interceptors.response.use(async (response, options): Promise<any> => {
 
 export default request;
 
-function isEmpty(exceptionMsg: any): boolean {
-    return exceptionMsg === null || exceptionMsg === undefined || exceptionMsg === '';
-}
+
