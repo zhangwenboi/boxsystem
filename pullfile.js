@@ -88,5 +88,4 @@ downloadAllFilesContent(0);
 
 process.on('uncaughtException', (err) => {
   console.log('An uncaught exception occurred:', err);
-  downloadAllFilesContent(0);
 });

@@ -4,6 +4,25 @@ interface SystemInfoMationData {
     cpu: Cpu;
     mem: Mem;
     disk: Disk[];
+    networkSpeed: NetworkSpeed[];
+}
+
+interface FormatSystemInfoMationData {
+    networkInterfaces: {
+        [key: string]: NetworkInterface[];
+    },
+    cpu: {
+        [key: string]: Cpu
+    },
+    mem: {
+        [key: string]: Mem
+    },
+    disk: {
+        [key: string]: Disk[]
+    },
+    networkSpeed: {
+        [key: string]: NetworkSpeed[]
+    },
 }
 
 interface Disk {
@@ -95,4 +114,19 @@ interface NetworkInterface {
     ieee8021xAuth: string;
     ieee8021xState: string;
     carrierChanges: number;
+}
+
+
+interface NetworkSpeed {
+    iface: string;
+    operstate: string;
+    rx_bytes: number;
+    rx_dropped: number;
+    rx_errors: number;
+    tx_bytes: number;
+    tx_dropped: number;
+    tx_errors: number;
+    rx_sec: null | number;
+    tx_sec: null | number;
+    ms: number;
 }

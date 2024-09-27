@@ -4,17 +4,20 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
     "checktb": "npm config set registry http://registry.npm.taobao.org/",
     "checkor": "npm config set registry https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@ant-design/charts": "^2.0.3",
+    "@ant-design/charts": "^2.2.1",
+    "@ant-design/icons": "^5.5.1",
     "@ant-design/pro-components": "^2.6.51",
     "antd": "^5.15.3",
+    "dayjs": "^1.11.13",
     "query-string": "^9.0.0",
+    "rc-resize-observer": "^1.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^6.22.3",
