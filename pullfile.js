@@ -11,7 +11,6 @@ const fileUrls = [
   'https://activity.hdslb.com/blackboard/static/20210604/4d40bc4f98f94fbc71c235832ce3efd4/hJEhL6jGOY.zip',
   'https://g-game-1317274415.cos.ap-guangzhou.myqcloud.com/ieg/img-pc/video-pc.mp4',
   'https://image.uc.cn/s/uae/g/3o/broccoli/resource/202401/zry_video.mp4',
-  'https://mksoftcdnhp.mydown.com/66f07704/447ca2e9853c93bf830f84782cc23808/uploadsoft/IQIYIsetup_tj%40kb002.exe',
   'https://listen.10155.com/listener/womusic-bucket/90115000/mv_vod/volte_mp4/20240828/24082811311828635791463694337.mp4?user=N/A&channelid=3000013947&contentid=91789000202408288653360&id=A2717860B0CACFC8158DE8D945977296&timestamp=1725695181&isSegment=0',
   'https://listen.10155.com/listener/womusic-bucket/90115000/mv_vod/volte_mp4/20240102/1742110336858882049.mp4?timestamp=1723283862&user=99999999999&channelid=3000013947&contentid=91789000202408096553510&id=FB3882939CFA06C95BD0E1D0258DE867&isSegment=0',
   'https://desk.ctyun.cn:8999/desktop-prod/software/windows_tob_client/15/64/202000005/CtyunClouddeskUniversal_2.0.0_202000005_x86_20230421161227_Setup_Signed.exe',
@@ -28,13 +27,22 @@ const fileUrls = [
 
 let timer = null;
 const downloadFileContent = (fileUrl) => {
-  return new Promise((resolve, reject) => {
-    if (timer) {
-      clearTimeout(timer);
-    }
-    const protocol = fileUrl.startsWith('https') ? https : http;
-    protocol
-      .get(fileUrl, (response) => {
+  try {
+    return new Promise((resolve, reject) => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+      const protocol = fileUrl.startsWith('https') ? https : http;
+
+      // 设置请求的选项
+      const options = {
+        hostname: fileUrl,
+        method: 'GET',
+        timeout: 5000 // 设置超时时间为 5 秒
+      };
+
+      // 发送 HTTP 请求
+      const req = protocol.get(options, (response) => {
         let data = 0;
         let startTime = Date.now(); // 记录开始时间
         let downloadedBytes = 0;
@@ -51,21 +59,23 @@ const downloadFileContent = (fileUrl) => {
           data += chunk.length;
           downloadedBytes += chunk.length;
         });
-
-        response.on('end', () => {
-          totalDownloadedBytes += data;
-          resolve();
-        });
-      })
-      .on('error', (err) => {
+      });
+      req.on('error', (err) => {
         console.log('失败', err);
         reject();
-      })
-      .on('timeout', () => {
+      });
+      req.on('timeout', () => {
         console.log('超时');
         reject();
       });
-  });
+      req.on('end', () => {
+        totalDownloadedBytes += data;
+        resolve();
+      });
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const downloadAllFilesContent = async (currentIndex = 0) => {
@@ -88,4 +98,5 @@ downloadAllFilesContent(0);
 
 process.on('uncaughtException', (err) => {
   console.log('An uncaught exception occurred:', err);
+  // downloadAllFilesContent(1);
 });
