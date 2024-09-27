@@ -11,8 +11,10 @@ const si = require('systeminformation');
 app.get('/api/system-info', async (req, res) => {
   try {
     const networkInterfaces = await si.networkInterfaces();
-    console.log(networkInterfaces);
-    const systemInfo = {};
+    const cpu = await si.cpu();
+    const mem = await si.mem();
+    const disk = await si.diskLayout();
+    const systemInfo = { networkInterfaces, cpu, mem, disk };
 
     res.status(200).send({
       data: systemInfo,

@@ -4,13 +4,13 @@ import { useEffect, useState } from "react"
 import request from "../../api"
 import { intervalRequest } from "../../uitls"
 export default () => {
-    const [systemInfo, setSystemInfo] = useState<SystemInfo>()
+    const [systemInfo, setSystemInfo] = useState<SystemInfoMationData>()
     const getData = () => {
-        request.get<ResponseData<SystemInfo>>('/api/system-info').then((res) => {
+        request.get<ResponseData<SystemInfoMationData>>('/api/system-info').then((res) => {
 
             if (res.code === 200) {
                 setSystemInfo(res.data)
-                console.log("🚀 ~ res.data:", res);
+                console.log("🚀 ~ res.data:", res.data);
             }
 
         })
