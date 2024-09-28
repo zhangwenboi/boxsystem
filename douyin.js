@@ -22,26 +22,31 @@ const getFileSize = (url) => {
         if (res.statusCode === 200) {
           resolve(parseInt(res.headers['content-length']));
         } else {
-          reject(new Error('Failed to get file size'));
+          reject('Failed to get file size');
         }
       })
       .end();
   });
 };
+const updateProgress = (progressData) => {
+  process.stdout.write(`\r${progressData}`);
+};
 
 const downFile = async (index) => {
   try {
     const fileSize = await getFileSize(fileUrls[index]);
-    const timeout = Math.ceil(fileSize / 1024); // Timeout in seconds based on file size
+    const timeout = Math.ceil(fileSize / 1024 / 1024);
 
     const downloadProcess = exec(`curl --connect-timeout 10 --max-time ${timeout} -o /dev/null ${fileUrls[index]}`);
+
+    console.log('🚀 ~ downloadProcess:', downloadProcess);
 
     downloadProcess.stdout.on('data', (data) => {
       // 解析下载进度信息
       const progressData = data.toString().trim();
 
       // 输出下载进度信息，每秒更新一次，覆盖之前的信息
-      process.stdout.write(`\r${progressData}`);
+      updateProgress(progressData);
     });
 
     downloadProcess.stderr.on('data', (data) => {
@@ -59,3 +64,7 @@ const downFile = async (index) => {
 };
 
 downFile(0);
+process.on('uncaughtException', (err) => {
+  console.log('An uncaught exception occurred:', err);
+  downFile(0);
+});
