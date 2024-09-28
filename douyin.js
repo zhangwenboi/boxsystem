@@ -28,41 +28,23 @@ const getFileSize = (url) => {
       .end();
   });
 };
-let lastUpdateTime = 0;
-const updateProgress = (progressData) => {
-  const currentTime = Date.now();
-  if (currentTime - lastUpdateTime >= 1000) {
-    // Update every 1 second
-    process.stdout.write(`\r${progressData}`);
-    lastUpdateTime = currentTime;
-  }
-};
 
 const downFile = async (index) => {
   try {
     const fileSize = await getFileSize(fileUrls[index]);
     const timeout = Math.ceil(fileSize / 1024 / 1024);
-
     const downloadProcess = exec(`curl --connect-timeout 10 --max-time ${timeout} -o /dev/null ${fileUrls[index]}`);
-
     downloadProcess.stdout.on('data', (data) => {
       // 解析下载进度信息
-      const progressData = data.toString().trim();
-
       // 输出下载进度信息，每秒更新一次，覆盖之前的信息
-      updateProgress(progressData);
     });
-
-    downloadProcess.stderr.on('data', (data) => {
-      console.error(`stderr: ${data}`);
-    });
+    downloadProcess.stderr.on('data', (data) => {});
 
     downloadProcess.on('exit', (code) => {
       console.log(`Download process exited with code ${code}`);
       downFile((index + 1) % fileUrls.length);
     });
   } catch (error) {
-    console.error(error.message);
     downFile((index + 1) % fileUrls.length);
   }
 };
