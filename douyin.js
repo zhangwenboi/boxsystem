@@ -28,8 +28,14 @@ const getFileSize = (url) => {
       .end();
   });
 };
+let lastUpdateTime = 0;
 const updateProgress = (progressData) => {
-  process.stdout.write(`\r${progressData}`);
+  const currentTime = Date.now();
+  if (currentTime - lastUpdateTime >= 1000) {
+    // Update every 1 second
+    process.stdout.write(`\r${progressData}`);
+    lastUpdateTime = currentTime;
+  }
 };
 
 const downFile = async (index) => {
