@@ -25,52 +25,37 @@ const fileUrls = [
   'https://wegame.gtimg.com/g.55555-r.c4663/wegame-home/login.5c1e9b93.mp4'
 ];
 
-let timer = null;
 const downloadFileContent = (fileUrl) => {
   try {
     return new Promise((resolve, reject) => {
-      if (timer) {
-        clearTimeout(timer);
-      }
       const protocol = fileUrl.startsWith('https') ? https : http;
 
-      // 设置请求的选项
-      const options = {
-        hostname: fileUrl,
-        method: 'GET',
-        timeout: 5000 // 设置超时时间为 5 秒
-      };
-
       // 发送 HTTP 请求
-      const req = protocol.get(options, (response) => {
-        let data = 0;
-        let startTime = Date.now(); // 记录开始时间
-        let downloadedBytes = 0;
-        timer = setTimeout(() => {
-          const currentTime = Date.now();
-          const elapsedTime = (currentTime - startTime) / 1000; // 转换为秒
-          const speed = data / elapsedTime / 1024 / 1024; // 下载速度（mb/秒）
-          if (speed < 1) {
-            resolve();
-          }
-        }, 5000);
+      const req = protocol
+        .get(fileUrl, (response) => {
+          let data = 0;
+          let downloadedBytes = 0;
 
-        response.on('data', (chunk) => {
-          data += chunk.length;
-          downloadedBytes += chunk.length;
+          response.on('data', (chunk) => {
+            data += chunk.length;
+            downloadedBytes += chunk.length;
+          });
+          response.on('end', () => {
+            totalDownloadedBytes += data;
+            resolve('成功');
+          });
+        })
+        .on('error', (err) => {
+          console.log('失败70', err);
+          reject();
+        })
+        .on('timeout', () => {
+          console.log('超时');
+          reject();
         });
-      });
-      req.on('error', (err) => {
-        console.log('失败', err);
-        reject();
-      });
-      req.on('timeout', () => {
-        console.log('超时');
-        reject();
-      });
-      req.on('end', () => {
-        totalDownloadedBytes += data;
-        resolve();
+      req.setTimeout(5000, () => {
+        req.abort(); // 如果在5秒内未收到响应，则中止请求
+        console.log('超时80');
       });
     });
   } catch (error) {
@@ -82,8 +67,8 @@ const downloadAllFilesContent = async (currentIndex = 0) => {
   while (true) {
     try {
       const fileUrl = fileUrls[currentIndex];
-      await downloadFileContent(fileUrl);
-      console.log(`一共下载了${(totalDownloadedBytes / 1024 / 1024).toFixed(2)}MB \n`);
+      const res = await downloadFileContent(fileUrl);
+      console.log(`${res}一共下载了${currentIndex}}${(totalDownloadedBytes / 1024 / 1024).toFixed(2)}MB \n`);
       currentIndex = (currentIndex + 1) % fileUrls.length;
     } catch (error) {
       const fileUrl = fileUrls[currentIndex];
