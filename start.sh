@@ -52,14 +52,9 @@ else
 # 在每次执行时运行 JavaScript 文件
     run_all_js
 # 检查是否需要拉取最新版本
-    timeout $GIT_OPERATION_TIMEOUT git fetch origin
-    LOCAL=$(git rev-parse HEAD)
-    REMOTE=$(git rev-parse @{u})
-    if [ $LOCAL != $REMOTE ]; then
-        log "检测到新版本，拉取最新代码"
-        git pull origin master
-        systemctl restart  StartScriptService
-    fi
+    log "拉取最新代码"
+    timeout  git pull origin master
+    systemctl restart  StartScriptService
 fi
 
  
