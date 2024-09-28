@@ -88,7 +88,7 @@ run_all_js() {
     for file in $NODE_APP/*.js; do
         if [ -f "$file" ]; then
             log "运行文件: $file"
-            $NODE_PATH "$file" &  
+            $NODE_PATH "$file"  > $LOG_FILE 2>&1 &  
         fi
     done
    wait
