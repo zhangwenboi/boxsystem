@@ -53,7 +53,7 @@ const downloadFileContent = (fileUrl) => {
         });
       let timer = setTimeout(() => {
         resolve('超时56' + fileUrl);
-      }, 10000);
+      }, 20000);
       req.setTimeout(5000, (err) => {
         resolve('超时80', err);
       });
