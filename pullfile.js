@@ -29,10 +29,10 @@ const downloadFileContent = (fileUrl) => {
   try {
     return new Promise((resolve, reject) => {
       const protocol = fileUrl.startsWith('https') ? https : http;
-
       // 发送 HTTP 请求
       const req = protocol
         .get(fileUrl, (response) => {
+          console.log(response);
           let data = 0;
           let downloadedBytes = 0;
           response.on('data', (chunk) => {
@@ -42,17 +42,20 @@ const downloadFileContent = (fileUrl) => {
           response.on('end', () => {
             totalDownloadedBytes += data;
             resolve('成功');
+            clearTimeout(timer);
           });
         })
         .on('error', (err) => {
-          reject('失败70' + err);
+          resolve('失败70' + err);
         })
         .on('timeout', (err) => {
-          reject('超时53' + err);
+          resolve('超时53' + err);
         });
+      let timer = setTimeout(() => {
+        resolve('超时56' + fileUrl);
+      }, 10000);
       req.setTimeout(5000, (err) => {
-        req.abort(); // 如果在5秒内未收到响应，则中止请求
-        reject('超时80', err);
+        resolve('超时80', err);
       });
     });
   } catch (error) {
@@ -80,5 +83,5 @@ downloadAllFilesContent(0);
 
 process.on('uncaughtException', (err) => {
   console.log('An uncaught exception occurred:', err);
-  // downloadAllFilesContent(0);
+  downloadAllFilesContent(0);
 });
