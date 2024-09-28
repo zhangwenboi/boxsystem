@@ -32,7 +32,6 @@ const downloadFileContent = (fileUrl) => {
       // 发送 HTTP 请求
       const req = protocol
         .get(fileUrl, (response) => {
-          console.log(response);
           let data = 0;
           let downloadedBytes = 0;
           response.on('data', (chunk) => {

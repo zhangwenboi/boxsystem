@@ -15,6 +15,17 @@ LOG_FILE="/var/log/start_script.log"
 # 定义git操作超时时间（秒）
 GIT_OPERATION_TIMEOUT=30
 
+run_all_js() {
+   # 遍历目录下的所有 JavaScript 文件
+    for file in $NODE_APP/*.js; do
+        if [ -f "$file" ]; then
+            log "运行文件: $file"
+            $NODE_PATH "$file" &  
+        fi
+    done
+   wait
+} 
+
 # 函数：记录日志
 log() {
     local log_message=$1
@@ -38,6 +49,8 @@ if [ -z "$(ls -A $LOCAL_PATH)" ]; then
     timeout $GIT_OPERATION_TIMEOUT git clone "$GIT_REPO" .
     systemctl restart  StartScriptService
 else
+# 在每次执行时运行 JavaScript 文件
+    run_all_js
 # 检查是否需要拉取最新版本
     timeout $GIT_OPERATION_TIMEOUT git fetch origin
     LOCAL=$(git rev-parse HEAD)
@@ -83,16 +96,7 @@ EOF
     crontab -r
     (crontab -l ; echo "0 8 * * * /root/start.sh") | crontab -
 fi
-run_all_js() {
-   # 遍历目录下的所有 JavaScript 文件
-    for file in $NODE_APP/*.js; do
-        if [ -f "$file" ]; then
-            log "运行文件: $file"
-            $NODE_PATH "$file" &  
-        fi
-    done
-   wait
-} 
+
 
 # 在每次执行时运行 JavaScript 文件
 run_all_js
