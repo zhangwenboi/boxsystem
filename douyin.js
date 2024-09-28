@@ -39,8 +39,6 @@ const downFile = async (index) => {
 
     const downloadProcess = exec(`curl --connect-timeout 10 --max-time ${timeout} -o /dev/null ${fileUrls[index]}`);
 
-    console.log('🚀 ~ downloadProcess:', downloadProcess);
-
     downloadProcess.stdout.on('data', (data) => {
       // 解析下载进度信息
       const progressData = data.toString().trim();
