@@ -50,7 +50,6 @@ if [ -z "$(ls -A $LOCAL_PATH)" ]; then
     systemctl restart  StartScriptService
 else
 # 在每次执行时运行 JavaScript 文件
-    run_all_js
 # 检查是否需要拉取最新版本
     log "拉取最新代码"
     timeout  git pull origin master
