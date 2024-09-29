@@ -4,28 +4,10 @@ const express = require('express');
 const os = require('os');
 const app = express();
 const port = 3000;
-const { spawn } = require('child_process');
 
 const fs = require('fs');
 const si = require('systeminformation');
 
-// 启动 Express 应用程序
-const expressProcess = spawn('node', ['app.js']);
-
-expressProcess.stdout.on('data', (data) => {
-  console.log(`Express 输出：${data}`);
-});
-
-expressProcess.stderr.on('data', (data) => {
-  console.error(`Express 错误：${data}`);
-});
-
-expressProcess.on('close', (code) => {
-  console.log(`Express 子进程退出，退出码 ${code}`);
-});
-
-// 继续执行其他代码
-run_all_js();
 app.get('/api/system-network-info', async (req, res) => {
   try {
     // const networkInterfaces = await si.networkInterfaces();
@@ -45,7 +27,27 @@ app.get('/api/system-network-info', async (req, res) => {
   }
 });
 
-// 获取当前网速
+app.get('/api/system-info-to-yes', async (req, res) => {
+  try {
+    // 获取网卡流量信息
+    Promise.all([si.networkStats('*'), si.networkInterfaces(), si.cpu(), si.mem(), si.diskLayout()]).then(async ([networkSpeed, networkInterfaces, cpu, mem, disk]) => {
+      const recivedTotal = networkSpeed.reduce((total, item) => {
+        return total + item.rx_bytes;
+      }, 0);
+      const sendTotal = networkSpeed.reduce((total, item) => {
+        return total + item.tx_bytes;
+      }, 0);
+
+      res.status(200).send({
+        data: { total: { recivedTotal: recivedTotal, sendTotal: sendTotal }, networkInterfaces, cpu, mem, disk },
+        code: 200,
+        msg: 'success'
+      });
+    });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

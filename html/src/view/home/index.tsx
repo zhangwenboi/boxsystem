@@ -6,8 +6,9 @@ import { Column, Line } from '@ant-design/charts';
 import RcResizeObserver from 'rc-resize-observer';
 import dayjs from "dayjs"
 import { Dropdown } from "antd";
-import type { MenuProps } from 'antd'
+import type { MenuProps, StatisticProps } from 'antd'
 import React from "react";
+import CountUp from "react-countup";
 const waitTimer = async (time: number) => {
     return await new Promise((resolve) => {
         setTimeout(() => {
@@ -50,31 +51,52 @@ const formatData = (oldData: FormatSystemInfoMationData, data: SystemInfoMationD
         }
     }
 }
-
+const formatter: StatisticProps['formatter'] = (value) => (
+    <CountUp end={value as number} separator="," decimals={2} />
+);
 export default () => {
     const [systemInfo, setSystemInfo] = useState<FormatSystemInfoMationData>()
-    const [currentSystemInfo, setCurrentSystemInfo] = useState<SystemInfoMationData>()
+    const [currentSystemInfo, setCurrentSystemInfo] = useState<any>()
+
     const [responsive, setResponsive] = useState(false)
 
 
     const getData = async () => {
-        const res = await request.get<ResponseData<NetworkSpeed[]>>('/api/system-info')
+        const res = await request.get<ResponseData<NetworkSpeed[]>>('/api/system-info-to-yes')
         if (res.code === 200) {
-            const time = new Date().toLocaleTimeString()
-            setSystemInfo(systemInfo => {
-                return formatData(systemInfo, res.data, time)
-            })
             setCurrentSystemInfo(res.data)
-            await waitTimer(3000)
-            getData()
         }
     }
 
-    // useEffect(() => {
-    //     getData()
-    // }, [])
+    useEffect(() => {
+        getData()
+    }, [])
 
-
+    const formatbyKBMBGB = (value: number) => {
+        if (value < 1024) {
+            return {
+                value: value,
+                unit: 'KB'
+            }
+        } else if (value < 1024 * 1024) {
+            return {
+                value: (value / 1024).toFixed(2),
+                unit: 'MB'
+            }
+        } else if (value < 1024 * 1024 * 1024) {
+            return {
+                value: (value / 1024 / 1024).toFixed(2),
+                unit: 'GB'
+            }
+        } else {
+            return {
+                value: (value / 1024 / 1024 / 1024).toFixed(2),
+                unit: 'TB'
+            }
+        }
+    }
+    const todayDownloadTotal = formatbyKBMBGB(currentSystemInfo?.total?.recivedTotal / 1024)
+    const memeryTotal = isNaN(currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) ? 0 : (currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) * 100
     return <div>
         <RcResizeObserver
             key="resize-observer"
@@ -94,15 +116,11 @@ export default () => {
                         <ProCard split="vertical">
                             <StatisticCard
                                 statistic={{
-                                    title: '昨日全部流量',
-                                    value: 234,
-                                    description: (
-                                        <Statistic
-                                            title="较本月平均流量"
-                                            value="8.04%"
-                                            trend="down"
-                                        />
-                                    ),
+                                    title: `今日下载`,
+                                    value: todayDownloadTotal?.value,
+                                    precision: 3,
+                                    formatter: formatter,
+                                    suffix: todayDownloadTotal?.unit
                                 }}
                             />
                             <StatisticCard
@@ -118,9 +136,10 @@ export default () => {
                         <ProCard split="vertical">
                             <StatisticCard
                                 statistic={{
-                                    title: '运行中实验',
-                                    value: '12/56',
-                                    suffix: '个',
+                                    title: '系统内存占用',
+                                    value: memeryTotal,
+                                    precision: 2,
+                                    suffix: '%',
                                 }}
                             />
                             <StatisticCard
