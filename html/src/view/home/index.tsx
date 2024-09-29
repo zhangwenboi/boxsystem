@@ -2,12 +2,12 @@ import { ProCard, Statistic, StatisticCard } from "@ant-design/pro-components"
 import { EllipsisOutlined } from "@ant-design/icons"
 import { useEffect, useMemo, useState } from "react"
 import request from "../../api"
-import { Column, Line } from '@ant-design/charts';
+import { Gauge, Column, Line } from '@ant-design/charts';
 import RcResizeObserver from 'rc-resize-observer';
 import dayjs from "dayjs"
 import { Dropdown } from "antd";
 import type { MenuProps, StatisticProps } from 'antd'
-import React from "react";
+
 import CountUp from "react-countup";
 const waitTimer = async (time: number) => {
     return await new Promise((resolve) => {
@@ -16,6 +16,71 @@ const waitTimer = async (time: number) => {
         }, time)
     })
 }
+const formatbyKBMBGB = (value: number) => {
+    if (value < 1024) {
+        return {
+            value: value,
+            unit: 'KB'
+        }
+    } else if (value < 1024 * 1024) {
+        return {
+            value: (value / 1024).toFixed(2),
+            unit: 'MB'
+        }
+    } else if (value < 1024 * 1024 * 1024) {
+        return {
+            value: (value / 1024 / 1024).toFixed(2),
+            unit: 'GB'
+        }
+    } else {
+        return {
+            value: (value / 1024 / 1024 / 1024).toFixed(2),
+            unit: 'TB'
+        }
+    }
+}
+const DemoGauge = ({ value }) => {
+    console.log("🚀 ~ value:", (value / 1024 / 1024) * 8);
+
+    const config = {
+        percent: (value / 1024 / 1024) * 8 / 100,
+        range: {
+            color: '#30BF78',
+        },
+        indicator: {
+            pointer: {
+                style: {
+                    stroke: '#D0D0D0',
+                },
+            },
+            pin: {
+                style: {
+                    stroke: '#D0D0D0',
+                },
+            },
+        },
+        axis: {
+            label: {
+                formatter(v) {
+                    return Number(v) * 100;
+                },
+            },
+            subTickLine: {
+                count: 3,
+            },
+        },
+        statistic: {
+            content: {
+                formatter: ({ percent }) => `Rate: ${(percent * 100).toFixed(0)}%`,
+                style: {
+                    color: 'rgba(0,0,0,0.65)',
+                    fontSize: 48,
+                },
+            },
+        },
+    };
+    return <Gauge {...config} />;
+};
 
 const formatData = (oldData: FormatSystemInfoMationData, data: SystemInfoMationData, time: string): FormatSystemInfoMationData => {
     return {
@@ -59,7 +124,8 @@ export default () => {
     const [currentSystemInfo, setCurrentSystemInfo] = useState<any>()
 
     const [responsive, setResponsive] = useState(false)
-
+    const [totalData, setTotalData] = useState(0)
+    const [speedData, setSpeedData] = useState(0)
 
     const getData = async () => {
         const res = await request.get<ResponseData<NetworkSpeed[]>>('/api/system-info-to-yes')
@@ -67,36 +133,14 @@ export default () => {
             setCurrentSystemInfo(res.data)
         }
     }
-
     useEffect(() => {
         getData()
     }, [])
 
-    const formatbyKBMBGB = (value: number) => {
-        if (value < 1024) {
-            return {
-                value: value,
-                unit: 'KB'
-            }
-        } else if (value < 1024 * 1024) {
-            return {
-                value: (value / 1024).toFixed(2),
-                unit: 'MB'
-            }
-        } else if (value < 1024 * 1024 * 1024) {
-            return {
-                value: (value / 1024 / 1024).toFixed(2),
-                unit: 'GB'
-            }
-        } else {
-            return {
-                value: (value / 1024 / 1024 / 1024).toFixed(2),
-                unit: 'TB'
-            }
-        }
-    }
-    const todayDownloadTotal = formatbyKBMBGB(currentSystemInfo?.total?.recivedTotal / 1024)
+
+    const todayDownloadTotal = formatbyKBMBGB(totalData)
     const memeryTotal = isNaN(currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) ? 0 : (currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) * 100
+
     return <div>
         <RcResizeObserver
             key="resize-observer"
@@ -151,18 +195,14 @@ export default () => {
                             />
                         </ProCard>
                     </ProCard>
-                    <LineChat />
+                    <StatisticCard
+                        title="当前网速"
+                        chart={<DemoGauge value={speedData} />}
+                    />
                 </ProCard>
-                <StatisticCard
-                    title="流量占用情况"
-                    chart={
-                        <img
-                            src="https://gw.alipayobjects.com/zos/alicdn/qoYmFMxWY/jieping2021-03-29%252520xiawu4.32.34.png"
-                            alt="大盘"
-                            width="100%"
-                        />
-                    }
-                />
+
+                <LineChat setTotalData={setTotalData} setSpeedData={setSpeedData} />
+
             </ProCard>
         </RcResizeObserver>
 
@@ -172,17 +212,16 @@ export default () => {
 }
 
 
-const LineChat = () => {
+const LineChat = ({ setTotalData, setSpeedData }) => {
     const [items, setItems] = useState<MenuProps["items"]>()
     const [active, setActive] = useState<string>()
     const [data, setData] = useState({})
 
     // const
     const getData = async () => {
+        const time = dayjs().format('HH:mm:ss')
         const res = await request.get<ResponseData<NetworkSpeed[]>>('/api/system-network-info')
         if (res.code === 200) {
-            const time = new Date().toLocaleTimeString()
-
             setItems(items => {
                 if (!items?.length || items.length !== res.data?.length) {
                     setActive(res.data?.[0].iface)
@@ -195,10 +234,13 @@ const LineChat = () => {
                 }
                 return items
             })
-
             setData(data => {
                 const newData = Object.assign({}, data)
+                let total = 0
+                let allspeed = 0
                 res.data?.forEach(item => {
+                    total += item.rx_bytes
+                    allspeed += item.rx_sec
                     const prodata = {
                         'total': (item.rx_bytes / 1024).toFixed(2),
                         'title': item.iface,
@@ -220,12 +262,12 @@ const LineChat = () => {
                     }
 
                 })
-
+                setSpeedData(allspeed / 1024)
+                setTotalData((total / 1024))
                 return newData
             })
             await waitTimer(3000)
             getData()
-
         }
     }
 
