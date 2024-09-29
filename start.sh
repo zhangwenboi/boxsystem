@@ -18,7 +18,7 @@ GIT_OPERATION_TIMEOUT=30
  
 # 设置捕获错误的函数
 handle_error() {
-    echo "Error occurred on line $1"
+    log "Error occurred on line $1"
     # 可以在这里执行适当的错误处理逻辑
 }
 
