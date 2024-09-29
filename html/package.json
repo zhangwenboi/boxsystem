@@ -11,7 +11,7 @@
     "checkor": "npm config set registry https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@ant-design/charts": "^2.2.1",
+    "@ant-design/charts": "^1.4.2",
     "@ant-design/icons": "^5.5.1",
     "@ant-design/pro-components": "^2.6.51",
     "antd": "^5.15.3",

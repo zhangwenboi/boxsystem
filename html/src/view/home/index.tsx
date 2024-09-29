@@ -2,11 +2,12 @@ import { ProCard, Statistic, StatisticCard } from "@ant-design/pro-components"
 import { EllipsisOutlined } from "@ant-design/icons"
 import { useEffect, useMemo, useState } from "react"
 import request from "../../api"
-import { GroupedColumn, Line } from '@ant-design/charts';
+import { Column, Line } from '@ant-design/charts';
 import RcResizeObserver from 'rc-resize-observer';
 import dayjs from "dayjs"
 import { Dropdown } from "antd";
 import type { MenuProps } from 'antd'
+import React from "react";
 const waitTimer = async (time: number) => {
     return await new Promise((resolve) => {
         setTimeout(() => {
@@ -157,50 +158,55 @@ const LineChat = () => {
     const [active, setActive] = useState<string>()
     const [data, setData] = useState({})
 
+    // const
     const getData = async () => {
         const res = await request.get<ResponseData<NetworkSpeed[]>>('/api/system-network-info')
         if (res.code === 200) {
             const time = new Date().toLocaleTimeString()
-            if (!items && items?.length !== res.data.length) {
-                setActive(res.data?.[0].iface)
-                setItems(res.data.map(e => {
-                    return {
-                        label: e.iface,
-                        key: e.iface
-                    }
-                }))
-            }
+
+            setItems(items => {
+                if (!items?.length || items.length !== res.data?.length) {
+                    setActive(res.data?.[0].iface)
+                    return res.data.map(e => {
+                        return {
+                            label: e.iface,
+                            key: e.iface
+                        }
+                    })
+                }
+                return items
+            })
+
             setData(data => {
+                const newData = Object.assign({}, data)
                 res.data?.forEach(item => {
                     const prodata = {
-                        'downtotal': (item.rx_bytes / 1024).toFixed(2),
+                        'total': (item.rx_bytes / 1024).toFixed(2),
                         'title': item.iface,
                         'label': time,
-                        'value': (item.rx_sec / 1024).toFixed(2),
+                        'value': parseInt((item.rx_sec / 1024).toFixed(2)),
+                        'category': '下载'
                     }
                     const prodata2 = {
-                        'value': (item.tx_sec / 1024).toFixed(2),
+                        'value': parseInt((item.tx_sec / 1024).toFixed(2)),
                         'label': time,
                         'title': item.iface,
-
-                        'uptotal': (item.tx_bytes / 1024).toFixed(2),
+                        'total': (item.tx_bytes / 1024).toFixed(2),
+                        'category': '上传'
                     }
-                    if (data[item.iface]) {
-                        if (data[item.iface].length >= 12) {
-                            data[item.iface]?.push(prodata, prodata2)?.splice(0, 2)
-                        } else {
-                            data[item.iface].push(prodata, prodata2)
-
-                        }
+                    if (newData[item.iface]) {
+                        newData[item.iface].push(prodata, prodata2)
                     } else {
-                        data[item.iface] = [prodata, prodata2]
+                        newData[item.iface] = [prodata, prodata2]
                     }
 
                 })
-                return data
+
+                return newData
             })
-            await waitTimer(1000)
+            await waitTimer(3000)
             getData()
+
         }
     }
 
@@ -210,18 +216,7 @@ const LineChat = () => {
 
 
 
-    const config = {
-        data: data[active],
-        title: {
-            visible: true,
-            text: '带数据点的折线图',
-        },
-        xField: 'label',
-        yField: 'value',
-        yAxis: { min: 0 },
-        color: ['#1ca9e6', '#f88c24'],
-        groupField: 'time',
-    };
+
     return <StatisticCard
         title="流量走势"
         extra={<Dropdown menu={{
@@ -235,11 +230,33 @@ const LineChat = () => {
             </a>
         </Dropdown>}
         chart={
-            <GroupedColumn   {...config} onlyChangeData={true} />
+            <ColumnChart data={data} active={active} />
         }
     />
+}
 
 
+
+const ColumnChart = ({ data, active }) => {
+    const config = {
+        data: data[active] || [],
+        xField: 'label',
+        yField: 'value',
+        seriesField: 'category',
+        yAxis: {
+            label: {
+                // 数值格式化为千分位
+                formatter: (v) => `${v}KB`
+            },
+        },
+        tooltip: {
+            title: '上传下载速度(KB) 1MB = 1024KB',
+        },
+        color: ['#1979C9', '#D62A0D', '#FAA219'],
+        smooth: true,
+        animation: false,
+    };
+    return <Line {...config} />
 }
 
 
