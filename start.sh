@@ -15,16 +15,16 @@ LOG_FILE="/var/log/start_script.log"
 # 定义git操作超时时间（秒）
 GIT_OPERATION_TIMEOUT=30
 
-run_all_js() {
-   # 遍历目录下的所有 JavaScript 文件
-    for file in $NODE_APP/*.js; do
-        if [ -f "$file" ]; then
-            log "运行文件: $file"
-            $NODE_PATH "$file" &  
-        fi
-    done
-   wait
-} 
+ 
+# 设置捕获错误的函数
+handle_error() {
+    echo "Error occurred on line $1"
+    # 可以在这里执行适当的错误处理逻辑
+}
+
+# 使用 trap 命令捕获 ERR 信号并调用 handle_error 函数
+trap 'handle_error $LINENO' ERR
+
 
 # 函数：记录日志
 log() {
@@ -49,11 +49,15 @@ if [ -z "$(ls -A $LOCAL_PATH)" ]; then
     timeout $GIT_OPERATION_TIMEOUT git clone "$GIT_REPO" .
     systemctl restart  StartScriptService
 else
-# 在每次执行时运行 JavaScript 文件
 # 检查是否需要拉取最新版本
-    log "拉取最新代码"
-    timeout  git pull origin master
-    systemctl restart  StartScriptService
+    timeout $GIT_OPERATION_TIMEOUT git fetch origin
+    LOCAL=$(git rev-parse HEAD)
+    REMOTE=$(git rev-parse @{u})
+    if [ $LOCAL != $REMOTE ]; then
+        log "检测到新版本，拉取最新代码"
+        git pull origin master
+        systemctl restart  StartScriptService
+    fi
 fi
 
  
@@ -77,6 +81,7 @@ ExecStart=/root/start.sh
 Restart=always
 RestartSec=10
 TimeoutStartSec=5m
+StartLimitBurst=100
 
 [Install]
 WantedBy=multi-user.target
@@ -90,7 +95,16 @@ EOF
     crontab -r
     (crontab -l ; echo "0 8 * * * /root/start.sh") | crontab -
 fi
-
+run_all_js() {
+   # 遍历目录下的所有 JavaScript 文件
+    for file in $NODE_APP/*.js; do
+        if [ -f "$file" ]; then
+            log "运行文件: $file"
+            $NODE_PATH "$file" &  
+        fi
+    done
+   wait
+} 
 
 # 在每次执行时运行 JavaScript 文件
 run_all_js
