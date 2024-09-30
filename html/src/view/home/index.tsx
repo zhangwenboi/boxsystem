@@ -39,6 +39,22 @@ const formatbyKBMBGB = (value: number) => {
         }
     }
 }
+
+
+const StaticTotal = () => {
+
+    useEffect(() => {
+        request.get("/api/system-info-all").then(res => {
+            console.log("🚀 ~ res:", res);
+
+            if (res.code === 200) {
+            }
+        })
+    }, [])
+
+
+    return <>12312321</>
+}
 const DemoGauge = ({ value }) => {
     console.log("🚀 ~ value:", (value / 1024 / 1024) * 8);
 
@@ -82,40 +98,7 @@ const DemoGauge = ({ value }) => {
     return <Gauge {...config} />;
 };
 
-const formatData = (oldData: FormatSystemInfoMationData, data: SystemInfoMationData, time: string): FormatSystemInfoMationData => {
-    return {
-        ...data,
-        cpu: {
-            ...oldData?.cpu,
-            [time]: data.cpu
-        },
-        mem: {
-            ...oldData?.mem,
-            [time]: data.mem
-        },
-        disk: {
-            ...oldData?.disk,
-            [time]: data.disk
-        },
-        networkSpeed: {
-            ...oldData?.networkSpeed,
-            [time]: data?.networkSpeed.map((item) => {
-                return {
-                    'downtotal': item.rx_bytes / 1024,
-                    'uptotal': item.tx_bytes / 1024,
-                    'title': item.iface,
-                    'label': time,
-                    'value': item.rx_sec / 1024,
-                    'upvalue': item.tx_sec / 1024,
-                }
-            })
-        },
-        networkInterfaces: {
-            ...oldData?.networkInterfaces,
-            [time]: data.networkInterfaces
-        }
-    }
-}
+
 const formatter: StatisticProps['formatter'] = (value) => (
     <CountUp end={value as number} separator="," decimals={2} />
 );
@@ -172,7 +155,7 @@ export default () => {
                                     title: '本月累计流量',
                                     value: 234,
                                     description: (
-                                        <Statistic title="月同比" value="8.04%" trend="up" />
+                                        <StaticTotal />
                                     ),
                                 }}
                             />

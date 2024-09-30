@@ -7,6 +7,8 @@ const port = 3000;
 
 const fs = require('fs');
 const si = require('systeminformation');
+// 获取网卡流量信息
+const { exec } = require('child_process');
 
 app.get('/api/system-network-info', async (req, res) => {
   try {
@@ -44,21 +46,35 @@ app.get('/api/system-info-to-yes', async (req, res) => {
 
 app.get('/api/system-info-all', async (req, res) => {
   try {
-    // 获取网卡流量信息
-    const { exec } = require('child_process');
-
     // 执行 vnstat 命令
     exec('vnstat -i eth0 -d', (error, stdout) => {
       if (error) {
         console.error(`exec error: ${error}`);
+        res.status(500).send({ error: error.message });
         return;
       }
 
-      // 将输出按行拆分为数组
-      const outputArray = stdout.trim().split('\n');
+      const outputLines = stdout.trim().split('\n');
 
-      // 输出结果数组
-      console.log(outputArray);
+      // 找到内容开始的索引
+      let contentStartIndex = outputLines.findIndex((line) => line.includes('------------------'));
+      contentStartIndex += 2; // 跳过表头和横线
+
+      const headers = outputLines[contentStartIndex - 1].split('|').map((header) => header.trim().replace(/(^\||\|$)/g, '')); // 获取表头
+
+      const data = outputLines.slice(contentStartIndex, -2).map((line) => {
+        const values = line
+          .trim()
+          .split('|')
+          .map((val) => val.trim());
+        const obj = {};
+        headers.forEach((header, index) => {
+          obj[header] = values[index];
+        });
+        return obj;
+      });
+      res.status(200).send({ data, code: 200, msg: 'success' });
+      console.log(data);
     });
   } catch (error) {}
 });
