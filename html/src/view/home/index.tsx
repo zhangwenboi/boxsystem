@@ -1,8 +1,8 @@
-import { ProCard, ProColumns, ProTable, Statistic, StatisticCard } from "@ant-design/pro-components"
+import { ProCard, ProColumns, ProTable, StatisticCard } from "@ant-design/pro-components"
 import { EllipsisOutlined } from "@ant-design/icons"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import request from "../../api"
-import { Gauge, Column, Line } from '@ant-design/charts';
+import { Line } from '@ant-design/charts';
 import RcResizeObserver from 'rc-resize-observer';
 import dayjs from "dayjs"
 import { Dropdown } from "antd";
@@ -76,14 +76,18 @@ const formatbyKBMBGB = (value: number) => {
 
 
 
-const formatter: StatisticProps['formatter'] = (value) => (
-    <CountUp end={value as number} separator="," decimals={2} />
-);
+const formatter: StatisticProps['formatter'] = (data: string) => {
+    if (data) {
+        const value = data?.split(/\ /g) || [0, 'KB']
+        return <CountUp end={value[0] as number} suffix={value[1] as string} separator="," decimals={2} />
+    }
+    return '0KB'
+
+};
 export default () => {
     const [currentSystemInfo, setCurrentSystemInfo] = useState<any>()
 
     const [responsive, setResponsive] = useState(false)
-    const [totalData, setTotalData] = useState(0)
     const [tableData, setTableData] = useState<HomeTableData[]>([])
 
     const getData = async () => {
@@ -97,7 +101,8 @@ export default () => {
     }, [])
 
 
-    const todayDownloadTotal = formatbyKBMBGB(totalData)
+    const todayDownloadTotal = tableData?.[tableData.length - 2]?.rx
+
     const memeryTotal = isNaN(currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) ? 0 : (currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) * 100
 
     const column: ProColumns<HomeTableData>[] = [
@@ -136,10 +141,9 @@ export default () => {
                             <StatisticCard
                                 statistic={{
                                     title: `今日下载`,
-                                    value: todayDownloadTotal?.value,
+                                    value: todayDownloadTotal,
                                     precision: 3,
                                     formatter: formatter,
-                                    suffix: todayDownloadTotal?.unit
                                 }}
                             />
                             <StatisticCard
@@ -188,7 +192,7 @@ export default () => {
                     }} />
                 </ProCard>
 
-                <LineChat setTotalData={setTotalData} />
+                <LineChat />
 
             </ProCard>
         </RcResizeObserver>
@@ -199,7 +203,7 @@ export default () => {
 }
 
 
-const LineChat = ({ setTotalData }) => {
+const LineChat = () => {
     const [items, setItems] = useState<MenuProps["items"]>()
     const [active, setActive] = useState<string>('eth0')
     const [data, setData] = useState({})
@@ -249,7 +253,6 @@ const LineChat = ({ setTotalData }) => {
 
                 })
 
-                setTotalData((total / 1024))
                 return newData
             })
             await waitTimer(3000)
@@ -297,7 +300,13 @@ const ColumnChart = ({ data, active }) => {
             },
         },
         tooltip: {
-            title: '上传下载速度(KB) 1MB = 1024KB',
+            title: '上传下载速度',
+            formatter: (data) => {
+                return {
+                    name: data.category,
+                    value: formatbyKBMBGB(data.value).value + formatbyKBMBGB(data.value).unit
+                }
+            }
         },
         color: ['#1979C9', '#D62A0D', '#FAA219'],
         smooth: true,
