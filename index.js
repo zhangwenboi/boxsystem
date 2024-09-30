@@ -42,6 +42,27 @@ app.get('/api/system-info-to-yes', async (req, res) => {
   }
 });
 
+app.get('/api/system-info-all', async (req, res) => {
+  try {
+    // 获取网卡流量信息
+    const { exec } = require('child_process');
+
+    // 执行 vnstat 命令
+    exec('vnstat -i eth0 -d', (error, stdout) => {
+      if (error) {
+        console.error(`exec error: ${error}`);
+        return;
+      }
+
+      // 将输出按行拆分为数组
+      const outputArray = stdout.trim().split('\n');
+
+      // 输出结果数组
+      console.log(outputArray);
+    });
+  } catch (error) {}
+});
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
