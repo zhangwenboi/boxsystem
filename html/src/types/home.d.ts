@@ -130,3 +130,11 @@ interface NetworkSpeed {
     tx_sec: null | number;
     ms: number;
 }
+
+interface HomeTableData {
+        day: string;
+        rx: string;
+        tx: string;
+        total: string;
+        'avg. rate': string;
+}

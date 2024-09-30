@@ -25,7 +25,11 @@ const lazyLoad = (children: ReactNode): ReactNode => {
   )
 }
 
+
 function App() {
+  useEffect(() => {
+    // document.querySelector('#index-loading')?.remove()
+  }, [])
   return (
     <Routes>
       <Route path="/" element={<Layout />} >

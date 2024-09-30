@@ -47,34 +47,34 @@ app.get('/api/system-info-to-yes', async (req, res) => {
 app.get('/api/system-info-all', async (req, res) => {
   try {
     // 执行 vnstat 命令
+
     exec('vnstat -i eth0 -d', (error, stdout) => {
       if (error) {
         console.error(`exec error: ${error}`);
         res.status(500).send({ error: error.message });
         return;
       }
+      const neda = stdout
+        .trim()
+        .replace(/\||-{2,}|\+/g, '')
+        .split('\n')
+        .slice(2);
 
-      const outputLines = stdout.trim().split('\n');
+      // 提取表头字段
+      const headers = neda[0].split(/\s{2,}/).slice(1);
 
-      // 找到内容开始的索引
-      let contentStartIndex = outputLines.findIndex((line) => line.includes('------------------'));
-      contentStartIndex += 2; // 跳过表头和横线
-
-      const headers = outputLines[contentStartIndex - 1].split('|').map((header) => header.trim().replace(/(^\||\|$)/g, '')); // 获取表头
-
-      const data = outputLines.slice(contentStartIndex, -2).map((line) => {
-        const values = line
-          .trim()
-          .split('|')
-          .map((val) => val.trim());
-        const obj = {};
-        headers.forEach((header, index) => {
-          obj[header] = values[index];
-        });
-        return obj;
+      neda.splice(neda.length - 2, 1);
+      const data = neda.slice(2).map((item) => {
+        const values = item.replace(/\|/g, '').split(/\s{2,}/);
+        return headers
+          .filter((e) => !e?.includes('total') && !e?.includes('tx'))
+          .reduce((acc, curr, i) => {
+            acc[curr] = values[i + 1];
+            return acc;
+          }, {});
       });
+
       res.status(200).send({ data, code: 200, msg: 'success' });
-      console.log(data);
     });
   } catch (error) {}
 });

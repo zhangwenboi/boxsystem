@@ -1,4 +1,4 @@
-import { ProCard, Statistic, StatisticCard } from "@ant-design/pro-components"
+import { ProCard, ProColumns, ProTable, Statistic, StatisticCard } from "@ant-design/pro-components"
 import { EllipsisOutlined } from "@ant-design/icons"
 import { useEffect, useMemo, useState } from "react"
 import request from "../../api"
@@ -16,6 +16,38 @@ const waitTimer = async (time: number) => {
         }, time)
     })
 }
+function convertStorageUnit(data) {
+
+    if (!data) return {
+        value: 0,
+        unit: 'KB'
+    }
+    const units = {
+        "GiB": Math.pow(2, 30),
+        "GB": Math.pow(10, 9),
+        "MiB": Math.pow(2, 20),
+        "MB": Math.pow(10, 6),
+        "KiB": Math.pow(2, 10),
+        "KB": Math.pow(10, 3)
+    };
+    const value = data?.match(/\d/g)?.[0]
+    const fromUnit = data?.match(/[a-zA-Z]+/g)?.[0]
+
+    if (value && fromUnit) {
+        const result = value * units[fromUnit] / units[fromUnit?.replace('i', '')];
+        return {
+            value: result?.toFixed(2),
+            unit: fromUnit?.replace('i', '')
+        };
+    } else {
+        return {
+            value: 0,
+            unit: 'KB'
+        }
+    }
+}
+
+
 const formatbyKBMBGB = (value: number) => {
     if (value < 1024) {
         return {
@@ -41,74 +73,18 @@ const formatbyKBMBGB = (value: number) => {
 }
 
 
-const StaticTotal = () => {
 
-    useEffect(() => {
-        request.get("/api/system-info-all").then(res => {
-            console.log("🚀 ~ res:", res);
-
-            if (res.code === 200) {
-            }
-        })
-    }, [])
-
-
-    return <>12312321</>
-}
-const DemoGauge = ({ value }) => {
-    console.log("🚀 ~ value:", (value / 1024 / 1024) * 8);
-
-    const config = {
-        percent: (value / 1024 / 1024) * 8 / 100,
-        range: {
-            color: '#30BF78',
-        },
-        indicator: {
-            pointer: {
-                style: {
-                    stroke: '#D0D0D0',
-                },
-            },
-            pin: {
-                style: {
-                    stroke: '#D0D0D0',
-                },
-            },
-        },
-        axis: {
-            label: {
-                formatter(v) {
-                    return Number(v) * 100;
-                },
-            },
-            subTickLine: {
-                count: 3,
-            },
-        },
-        statistic: {
-            content: {
-                formatter: ({ percent }) => `Rate: ${(percent * 100).toFixed(0)}%`,
-                style: {
-                    color: 'rgba(0,0,0,0.65)',
-                    fontSize: 48,
-                },
-            },
-        },
-    };
-    return <Gauge {...config} />;
-};
 
 
 const formatter: StatisticProps['formatter'] = (value) => (
     <CountUp end={value as number} separator="," decimals={2} />
 );
 export default () => {
-    const [systemInfo, setSystemInfo] = useState<FormatSystemInfoMationData>()
     const [currentSystemInfo, setCurrentSystemInfo] = useState<any>()
 
     const [responsive, setResponsive] = useState(false)
     const [totalData, setTotalData] = useState(0)
-    const [speedData, setSpeedData] = useState(0)
+    const [tableData, setTableData] = useState<HomeTableData[]>([])
 
     const getData = async () => {
         const res = await request.get<ResponseData<NetworkSpeed[]>>('/api/system-info-to-yes')
@@ -124,6 +100,22 @@ export default () => {
     const todayDownloadTotal = formatbyKBMBGB(totalData)
     const memeryTotal = isNaN(currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) ? 0 : (currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) * 100
 
+    const column: ProColumns<HomeTableData>[] = [
+
+        {
+            title: '日期',
+            dataIndex: 'day',
+        },
+        {
+            title: '下载',
+            dataIndex: 'rx',
+        },
+        {
+            title: '平均速率',
+            dataIndex: 'avg. rate',
+        },
+    ]
+    const monthTotal = tableData?.find(e => e.day === 'estimated')?.rx
     return <div>
         <RcResizeObserver
             key="resize-observer"
@@ -153,10 +145,8 @@ export default () => {
                             <StatisticCard
                                 statistic={{
                                     title: '本月累计流量',
-                                    value: 234,
-                                    description: (
-                                        <StaticTotal />
-                                    ),
+                                    value: monthTotal,
+
                                 }}
                             />
                         </ProCard>
@@ -171,20 +161,34 @@ export default () => {
                             />
                             <StatisticCard
                                 statistic={{
-                                    title: '历史实验总数',
-                                    value: '134',
+                                    title: 'CPU',
+                                    value: `物理核心${currentSystemInfo?.cpu?.cores || 0}`,
                                     suffix: '个',
+
                                 }}
                             />
                         </ProCard>
                     </ProCard>
-                    <StatisticCard
-                        title="当前网速"
-                        chart={<DemoGauge value={speedData} />}
-                    />
+                    <ProTable headerTitle='近日流量' tooltip="注意GIB不等于GB," request={async () => {
+                        const res = await request.get<ResponseData<HomeTableData[]>>("/api/system-info-all")
+                        if (res.code === 200) {
+                            setTableData(res.data)
+                            return {
+                                data: res.data,
+                                success: true
+                            }
+                        }
+                        return {
+                            data: [],
+                            success: false
+                        }
+                    }} search={false} columns={column} pagination={{
+                        hideOnSinglePage: true,
+
+                    }} />
                 </ProCard>
 
-                <LineChat setTotalData={setTotalData} setSpeedData={setSpeedData} />
+                <LineChat setTotalData={setTotalData} />
 
             </ProCard>
         </RcResizeObserver>
@@ -195,9 +199,9 @@ export default () => {
 }
 
 
-const LineChat = ({ setTotalData, setSpeedData }) => {
+const LineChat = ({ setTotalData }) => {
     const [items, setItems] = useState<MenuProps["items"]>()
-    const [active, setActive] = useState<string>()
+    const [active, setActive] = useState<string>('eth0')
     const [data, setData] = useState({})
 
     // const
@@ -207,7 +211,6 @@ const LineChat = ({ setTotalData, setSpeedData }) => {
         if (res.code === 200) {
             setItems(items => {
                 if (!items?.length || items.length !== res.data?.length) {
-                    setActive(res.data?.[0].iface)
                     return res.data.map(e => {
                         return {
                             label: e.iface,
@@ -220,10 +223,10 @@ const LineChat = ({ setTotalData, setSpeedData }) => {
             setData(data => {
                 const newData = Object.assign({}, data)
                 let total = 0
-                let allspeed = 0
+
                 res.data?.forEach(item => {
                     total += item.rx_bytes
-                    allspeed += item.rx_sec
+
                     const prodata = {
                         'total': (item.rx_bytes / 1024).toFixed(2),
                         'title': item.iface,
@@ -232,10 +235,10 @@ const LineChat = ({ setTotalData, setSpeedData }) => {
                         'category': '下载'
                     }
                     const prodata2 = {
-                        'value': parseInt((item.tx_sec / 1024).toFixed(2)),
+                        'value': parseInt((item.tx_sec / 10240).toFixed(2)),
                         'label': time,
                         'title': item.iface,
-                        'total': (item.tx_bytes / 1024).toFixed(2),
+                        'total': (item.tx_bytes / 10240).toFixed(2),
                         'category': '上传'
                     }
                     if (newData[item.iface]) {
@@ -245,7 +248,7 @@ const LineChat = ({ setTotalData, setSpeedData }) => {
                     }
 
                 })
-                setSpeedData(allspeed / 1024)
+
                 setTotalData((total / 1024))
                 return newData
             })
@@ -270,7 +273,7 @@ const LineChat = ({ setTotalData, setSpeedData }) => {
         }}>
             <a onClick={(e) => e.preventDefault()}>
                 <EllipsisOutlined />
-                更多
+                更多网卡
             </a>
         </Dropdown>}
         chart={
