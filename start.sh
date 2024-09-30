@@ -15,6 +15,17 @@ LOG_FILE="/var/log/start_script.log"
 # 定义git操作超时时间（秒）
 GIT_OPERATION_TIMEOUT=30
 
+ 
+# 设置捕获错误的函数
+handle_error() {
+    log "Error occurred on line $1"
+    # 可以在这里执行适当的错误处理逻辑
+}
+
+# 使用 trap 命令捕获 ERR 信号并调用 handle_error 函数
+trap 'handle_error $LINENO' ERR
+
+
 # 函数：记录日志
 log() {
     local log_message=$1
