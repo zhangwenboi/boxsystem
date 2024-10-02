@@ -29,20 +29,20 @@ app.get('/api/system-network-info', async (req, res) => {
   }
 });
 
-app.post('/api/system-exec-time-piker', async (req, res) => {
-  try {
-    console.log(req);
+// app.post('/api/system-exec-time-piker', async (req, res) => {
+//   try {
+//     console.log(req);
 
-    // res.status(200).send({
-    //   data,
-    //   msg: 'success',
-    //   code: 200
-    // });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Internal Server Error');
-  }
-});
+//     // res.status(200).send({
+//     //   data,
+//     //   msg: 'success',
+//     //   code: 200
+//     // });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
 
 app.get('/api/system-info-to-yes', async (req, res) => {
   try {

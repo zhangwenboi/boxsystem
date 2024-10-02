@@ -46,11 +46,11 @@ pkill node
 
 # 如果目录为空，则进行 git clone；如果不为空，则执行 git pull
 if [ -z "$(ls -A $LOCAL_PATH)" ]; then
-    timeout $GIT_OPERATION_TIMEOUT git clone "$GIT_REPO" .
+    git clone "$GIT_REPO" .
     systemctl restart  StartScriptService
 else
 # 检查是否需要拉取最新版本
-    timeout $GIT_OPERATION_TIMEOUT git fetch origin
+    git fetch origin
     LOCAL=$(git rev-parse HEAD)
     REMOTE=$(git rev-parse @{u})
     if [ $LOCAL != $REMOTE ]; then
