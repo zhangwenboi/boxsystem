@@ -95,17 +95,11 @@ export default () => {
                         )}
                     >
                         <PageContainer
-
                             subTitle="下行盒子拉取查看"
 
                         >
-                            <ProCard
-                                style={{
-                                    minHeight: 600,
-                                }}
-                            >
-                                <Outlet />
-                            </ProCard>
+
+                            <Outlet />
                         </PageContainer>
 
 

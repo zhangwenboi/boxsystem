@@ -16,6 +16,13 @@ const waitTimer = async (time: number) => {
         }, time)
     })
 }
+/**
+ * 将 storage size 转换为人类可读的格式
+ * @example "1.23GiB" => { value: 1.23, unit: "GB" }
+ * @param {string} data
+ * @returns {{ value: number, unit: string }}
+ */
+
 function convertStorageUnit(data) {
 
     if (!data) return {
@@ -106,7 +113,6 @@ export default () => {
     const memeryTotal = isNaN(currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) ? 0 : (currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) * 100
 
     const column: ProColumns<HomeTableData>[] = [
-
         {
             title: '日期',
             dataIndex: 'day',
@@ -130,14 +136,16 @@ export default () => {
         >
             <ProCard
                 title="数据概览"
-                extra={dayjs().format('YYYY-MM-DD HH:mm:ss')}
+                extra={<>
+                    {dayjs().format('YYYY-MM-DD HH:mm:ss')}
+                </>}
                 split={responsive ? 'horizontal' : 'vertical'}
                 headerBordered
                 bordered
             >
-                <ProCard split="horizontal">
+                <ProCard split="horizontal"  >
                     <ProCard split="horizontal">
-                        <ProCard split="vertical">
+                        <ProCard split={responsive ? 'horizontal' : 'vertical'}>
                             <StatisticCard
                                 statistic={{
                                     title: `今日下载`,
@@ -148,48 +156,58 @@ export default () => {
                             />
                             <StatisticCard
                                 statistic={{
-                                    title: '本月累计流量',
+                                    title: '本月流量',
                                     value: monthTotal,
 
                                 }}
                             />
                         </ProCard>
-                        <ProCard split="vertical">
+                        <ProCard split={responsive ? 'horizontal' : 'vertical'}>
                             <StatisticCard
                                 statistic={{
-                                    title: '系统内存占用',
+                                    title: '内存占用',
                                     value: memeryTotal,
                                     precision: 2,
                                     suffix: '%',
+
                                 }}
                             />
                             <StatisticCard
                                 statistic={{
                                     title: 'CPU',
-                                    value: `物理核心${currentSystemInfo?.cpu?.cores || 0}`,
-                                    suffix: '个',
+                                    value: `${currentSystemInfo?.cpu?.cores || 0}`,
+                                    suffix: '核',
 
                                 }}
                             />
                         </ProCard>
                     </ProCard>
-                    <ProTable headerTitle='近日流量' tooltip="注意GIB不等于GB," request={async () => {
-                        const res = await request.get<ResponseData<HomeTableData[]>>("/api/system-info-all")
-                        if (res.code === 200) {
-                            setTableData(res.data)
-                            return {
-                                data: res.data,
-                                success: true
+                    <ProTable
+                        toolbar={{
+                            title: '近日流量'
+                        }}
+                        options={responsive ? false : {
+                            density: true,
+                            fullScreen: true,
+                            reload: true,
+                        }}
+                        tooltip="注意GIB不等于GB," request={async () => {
+                            const res = await request.get<ResponseData<HomeTableData[]>>("/api/system-info-all")
+                            if (res.code === 200) {
+                                setTableData(res.data)
+                                return {
+                                    data: res.data,
+                                    success: true
+                                }
                             }
-                        }
-                        return {
-                            data: [],
-                            success: false
-                        }
-                    }} search={false} columns={column} pagination={{
-                        hideOnSinglePage: true,
+                            return {
+                                data: [],
+                                success: false
+                            }
+                        }} search={false} columns={column} pagination={{
+                            hideOnSinglePage: true,
 
-                    }} />
+                        }} />
                 </ProCard>
 
                 <LineChat />
