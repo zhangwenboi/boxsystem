@@ -2,6 +2,7 @@
 
 const http = require('http');
 const https = require('https');
+const fs = require('fs');
 
 // 统计总共下载的字节数(mb)
 let totalDownloadedBytes = 0;
@@ -61,14 +62,55 @@ const downloadFileContent = (fileUrl) => {
     console.log(error);
   }
 };
+const getFileData = () => {
+  try {
+    const res = fs.readFileSync('runtimer.json', 'utf8');
+    return JSON.parse(res);
+  } catch (error) {
+    return { start: '0:0', end: '0:0' };
+  }
+};
+const canRun = () => {
+  const startEnd = getFileData();
+  if (startEnd?.start === startEnd?.end) {
+    return true;
+  }
 
+  // 获取当前时间的小时和分钟
+  const now = new Date();
+  const currentHour = now.getHours();
+  const currentMinute = now.getMinutes();
+  // 定义时间范围
+  const [startHour, startMinute] = startEnd?.start?.split(':')?.map(Number);
+  const [endHour, endMinute] = startEnd?.end?.split(':')?.map(Number);
+
+  // 判断当前时间是否在时间范围内
+  if ((currentHour > startHour || (currentHour === startHour && currentMinute >= startMinute)) && (currentHour < endHour || (currentHour === endHour && currentMinute <= endMinute))) {
+    return true;
+  } else {
+    return false;
+  }
+};
+const waitTimer = async (time) => {
+  return await new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(true);
+    }, time);
+  });
+};
 const downloadAllFilesContent = async (currentIndex = 0) => {
   while (true) {
     try {
-      const fileUrl = fileUrls[currentIndex];
-      const res = await downloadFileContent(fileUrl);
-      console.log(`${res}一共下载了${currentIndex} | ${(totalDownloadedBytes / 1024 / 1024).toFixed(2)}MB \n`);
-      currentIndex = (currentIndex + 1) % fileUrls.length;
+      if (!canRun()) {
+        console.log('不在运行时间！');
+        await waitTimer(10000);
+        continue;
+      } else {
+        const fileUrl = fileUrls[currentIndex];
+        const res = await downloadFileContent(fileUrl);
+        console.log(`${res}一共下载了${currentIndex} | ${(totalDownloadedBytes / 1024 / 1024).toFixed(2)}MB \n`);
+        currentIndex = (currentIndex + 1) % fileUrls.length;
+      }
     } catch (error) {
       const fileUrl = fileUrls[currentIndex];
       await downloadFileContent(fileUrl);

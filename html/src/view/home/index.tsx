@@ -1,11 +1,11 @@
-import { ProCard, ProColumns, ProTable, StatisticCard } from "@ant-design/pro-components"
+import { DrawerForm, ModalForm, ProCard, ProColumns, ProFormDependency, ProFormSlider, ProFormSwitch, ProFormTimePicker, ProTable, StatisticCard } from "@ant-design/pro-components"
 import { EllipsisOutlined } from "@ant-design/icons"
 import { useEffect, useState } from "react"
 import request from "../../api"
 import { Line } from '@ant-design/charts';
 import RcResizeObserver from 'rc-resize-observer';
 import dayjs from "dayjs"
-import { Dropdown } from "antd";
+import { Dropdown, message } from "antd";
 import type { MenuProps, StatisticProps } from 'antd'
 
 import CountUp from "react-countup";
@@ -94,7 +94,7 @@ const formatter: StatisticProps['formatter'] = (data: string) => {
 export default () => {
     const [currentSystemInfo, setCurrentSystemInfo] = useState<any>()
 
-    const [responsive, setResponsive] = useState(false)
+    const [responsive, setResponsive] = useState(1920)
     const [tableData, setTableData] = useState<HomeTableData[]>([])
 
     const getData = async () => {
@@ -131,21 +131,62 @@ export default () => {
         <RcResizeObserver
             key="resize-observer"
             onResize={(offset) => {
-                setResponsive(offset.width < 596);
+                setResponsive(offset.width);
             }}
         >
             <ProCard
                 title="数据概览"
                 extra={<>
+                    <ModalForm
+                        title="设置运行时间"
+                        layout="horizontal"
+                        width={responsive < 596 ? '80%' : '60%'}
+                        trigger={
+                            <a className="mx-2"> 设置 </a>
+                        }
+                        onFinish={async (data) => {
+                            const res = await request.post('/api/system-exec-time-piker', {
+                                data: data
+                            })
+                            console.log(res)
+                            message.success('设置成功');
+                        }}
+                        submitter={{
+                            render(props, dom) {
+                                return <div className=" flex gap-x-2 justify-center w-full ">
+                                    {dom}
+                                </div>
+                            },
+                        }}
+                    >
+                        <ProFormDependency name={['repeat']}  >
+                            {
+                                ({ repeat }) => {
+                                    return <ProFormTimePicker.RangePicker rules={repeat ? [] : [
+                                        {
+                                            required: true
+                                        }
+                                    ]} tooltip="只会在此时间段内运行" name='time' disabled={repeat} label="运行时间" fieldProps={{
+                                        format: 'HH:mm'
+                                    }} />
+                                }
+                            }
+                        </ProFormDependency>
+
+                        <ProFormSwitch name="repeat" label='持续运行' tooltip="开启后将全天运行" fieldProps={{
+                            checkedChildren: "开启", unCheckedChildren: "关闭"
+                        }} />
+
+                    </ModalForm>
                     {dayjs().format('YYYY-MM-DD HH:mm:ss')}
                 </>}
-                split={responsive ? 'horizontal' : 'vertical'}
+                split={responsive < 1280 ? 'horizontal' : 'vertical'}
                 headerBordered
                 bordered
             >
                 <ProCard split="horizontal"  >
                     <ProCard split="horizontal">
-                        <ProCard split={responsive ? 'horizontal' : 'vertical'}>
+                        <ProCard split={responsive < 596 ? 'horizontal' : 'vertical'}>
                             <StatisticCard
                                 statistic={{
                                     title: `今日下载`,
@@ -162,14 +203,13 @@ export default () => {
                                 }}
                             />
                         </ProCard>
-                        <ProCard split={responsive ? 'horizontal' : 'vertical'}>
+                        <ProCard split="vertical">
                             <StatisticCard
                                 statistic={{
                                     title: '内存占用',
                                     value: memeryTotal,
                                     precision: 2,
                                     suffix: '%',
-
                                 }}
                             />
                             <StatisticCard
@@ -186,7 +226,7 @@ export default () => {
                         toolbar={{
                             title: '近日流量'
                         }}
-                        options={responsive ? false : {
+                        options={responsive > 596 ? false : {
                             density: true,
                             fullScreen: true,
                             reload: true,

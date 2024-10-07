@@ -9,6 +9,7 @@ const fs = require('fs');
 const si = require('systeminformation');
 // 获取网卡流量信息
 const { exec } = require('child_process');
+app.use(express.json());
 
 app.get('/api/system-network-info', async (req, res) => {
   try {
@@ -29,20 +30,38 @@ app.get('/api/system-network-info', async (req, res) => {
   }
 });
 
-// app.post('/api/system-exec-time-piker', async (req, res) => {
-//   try {
-//     console.log(req);
-
-//     // res.status(200).send({
-//     //   data,
-//     //   msg: 'success',
-//     //   code: 200
-//     // });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// });
+app.post('/api/system-exec-time-piker', async (req, res) => {
+  try {
+    const params = req.body;
+    if (params.repeat) {
+      // xxxx
+      const f = fs.createWriteStream('./runtimer.json');
+      f.write(JSON.stringify({ start: '0:00', end: '0:00' }));
+      f.end();
+      res.status(200).send({
+        data: '开启全天运行',
+        msg: 'success',
+        code: 200
+      });
+    } else if (params.time) {
+      const [start, end] = params.time;
+      res.status(200).send({
+        data: `任务将在每天的${start} - ${end} 运行`,
+        msg: 'success',
+        code: 200
+      });
+    } else {
+      res.status(200).send({
+        data: '参数错误',
+        msg: 'success',
+        code: 500
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
 
 app.get('/api/system-info-to-yes', async (req, res) => {
   try {
