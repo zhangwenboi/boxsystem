@@ -14,7 +14,7 @@ const getFileData = () => {
     const res = fs.readFileSync('runtimer.json', 'utf8');
     return JSON.parse(res);
   } catch (error) {
-    return { start: '0:0', end: '0:0' };
+    return { start: 0, end: 0 };
   }
 };
 const canRun = () => {
