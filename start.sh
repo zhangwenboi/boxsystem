@@ -48,20 +48,30 @@ pkill node
 
 # 如果目录为空，则进行 git clone；如果不为空，则执行 git pull
 if [ -z "$(ls -A $LOCAL_PATH)" ]; then
-    timeout $TIMEOUT_S git clone "$GIT_REPO" .
-    systemctl restart  StartScriptService
+    if timeout $TIMEOUT_S git clone "$GIT_REPO" .; then
+        systemctl restart StartScriptService
+    else
+        log "拉取代码失败或超时"
+    fi
 else
 # 检查是否需要拉取最新版本
-    timeout $TIMEOUT_S git fetch origin
-    LOCAL=$(git rev-parse HEAD)
-    REMOTE=$(git rev-parse @{u})
-    if [ $LOCAL != $REMOTE ]; then
-        log "检测到新版本，拉取最新代码"
-        git reset --hard HEAD
-        git pull origin master
-        timeout $TIMEOUT_S $NPM_PATH i
-        systemctl restart  StartScriptService
+    if timeout $TIMEOUT_S git fetch origin; then
+        LOCAL=$(git rev-parse HEAD)
+        REMOTE=$(git rev-parse @{u})
+        if [ $LOCAL != $REMOTE ]; then
+            log "检测到新版本，拉取最新代码"
+            if timeout $TIMEOUT_S git reset --hard HEAD && \
+               timeout $TIMEOUT_S git pull origin master && \
+               timeout $TIMEOUT_S $NPM_PATH i; then
+               systemctl restart StartScriptService
+            else
+                log "拉取失败不重启"
+            fi
+        fi
+    else
+        log "拉取代码失败或超时"
     fi
+ 
 fi
 
  
