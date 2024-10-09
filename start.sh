@@ -59,7 +59,7 @@ else
         log "检测到新版本，拉取最新代码"
         git reset --hard HEAD
         git pull origin master
-        NPM_PATH i
+        $NPM_PATH i
         systemctl restart  StartScriptService
     fi
 fi
