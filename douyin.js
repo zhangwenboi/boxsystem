@@ -2,14 +2,12 @@
 
 // /** @format */
 
-const http = require('http');
-const https = require('https');
+const { request, axios } = require('./utils/api');
+const fs = require('fs');
 
 // 统计总共下载的字节数(mb)
 let totalDownloadedBytes = 0;
-
-let progresscurrentchunks = 0;
-let alldata = 0;
+let fileUrls = [];
 
 const getFileData = () => {
   try {
@@ -20,24 +18,27 @@ const getFileData = () => {
   }
 };
 const canRun = () => {
-  const startEnd = getFileData();
-  if (startEnd?.start === startEnd?.end) {
-    return true;
-  }
+  try {
+    const startEnd = getFileData();
+    if (startEnd?.start === startEnd?.end) {
+      return true;
+    }
+    // 获取当前时间的小时和分钟
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    // 定义时间范围
+    const [startHour, startMinute] = startEnd?.start?.split(':')?.map(Number);
+    const [endHour, endMinute] = startEnd?.end?.split(':')?.map(Number);
 
-  // 获取当前时间的小时和分钟
-  const now = new Date();
-  const currentHour = now.getHours();
-  const currentMinute = now.getMinutes();
-  // 定义时间范围
-  const [startHour, startMinute] = startEnd?.start?.split(':')?.map(Number);
-  const [endHour, endMinute] = startEnd?.end?.split(':')?.map(Number);
-
-  // 判断当前时间是否在时间范围内
-  if ((currentHour > startHour || (currentHour === startHour && currentMinute >= startMinute)) && (currentHour < endHour || (currentHour === endHour && currentMinute <= endMinute))) {
+    // 判断当前时间是否在时间范围内
+    if ((currentHour > startHour || (currentHour === startHour && currentMinute >= startMinute)) && (currentHour < endHour || (currentHour === endHour && currentMinute <= endMinute))) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
     return true;
-  } else {
-    return false;
   }
 };
 const waitTimer = async (time) => {
@@ -47,84 +48,90 @@ const waitTimer = async (time) => {
     }, time);
   });
 };
-const requestData = async (url, callback) => {
-  const protocol = url.startsWith('https') ? https : http;
-  let timer = setTimeout(() => {
-    resolve('超时56' + url);
-  }, 20000);
-  // 发送 HTTP 请求
-  const req = protocol
-    .get(url, callback)
-    .on('error', (err) => {
-      clearTimeout(timer);
-      resolve('失败70' + err);
-    })
-    .on('timeout', (err) => {
-      clearTimeout(timer);
-      resolve('超时53' + err);
-    });
 
-  req.setTimeout(5000, (err) => {
-    resolve('超时80', err);
-  });
+const getFileSize = async (url) => {
+  try {
+    const response = await axios.head(url, {
+      timeout: 8000
+    });
+    const fileSize = response.headers['content-length'];
+    console.log('文件总大小（MB）:', (fileSize / 1024 / 1024).toFixed(2));
+    return fileSize;
+  } catch (error) {
+    console.error('获取文件大小出错:' + error);
+    return null;
+  }
 };
+
 const downloadFileContent = (fileUrl) => {
   try {
-    return new Promise((resolve, reject) => {
-      requestData(fileUrl, (response) => {
-        alldata = Number((response.headers['content-length'] / 1024 / 1024)?.toFixed(2));
-        console.log('本次将要下载' + alldata + 'MB');
-        response.on('data', (chunk) => {
-          progresscurrentchunks += Number(chunk.length);
+    return new Promise(async (resolve, reject) => {
+      const filenormal = await getFileSize(fileUrl);
+      if (!filenormal) {
+        resolve(totalDownloadedBytes);
+        return;
+      }
+      request
+        .get(fileUrl, {
+          responseType: 'blob',
+          onDownloadProgress: (evt) => {
+            totalDownloadedBytes += evt.bytes;
+          },
+          onError: (err) => {
+            console.log('🚀 ~ err:', err);
+            resolve(totalDownloadedBytes);
+          }
+        })
+        .then(() => {
+          resolve(totalDownloadedBytes);
+        })
+        .catch((err) => {
+          console.log(err);
+          resolve(totalDownloadedBytes);
         });
-        response.on('end', () => {
-          totalDownloadedBytes += alldata;
-          resolve('成功');
-          clearTimeout(timer);
-        });
-        if (alldata > 0) {
-          clearTimeout(timer);
-          timer = setTimeout(() => {
-            resolve('超时56' + fileUrl);
-          }, alldata * 300);
-        }
-      });
     });
   } catch (error) {
     console.log(error);
   }
 };
+const getUrls = async () => {
+  const res = await request.get('https://gitee.com/wen_wen_okok/boxurl/raw/master/data.json');
+  if (res?.status == 200) {
+    fileUrls = res?.data?.data || [];
+  }
+};
 
 const downloadAllFilesContent = async (currentIndex = 0) => {
+  if (fileUrls.length == 0) {
+    await getUrls();
+  }
   while (true) {
-    const fileUrls = [];
-    requestData('https://gitee.com/wen_wen_okok/boxurl/raw/master/boxurl/data.txt', (response) => {
-      console.log(response);
-    });
-    // try {
-    //   if (!canRun()) {
-    //     console.log('不在运行时间！');
-    //     await waitTimer(10000);
-    //     continue;
-    //   } else {
-    //     progresscurrentchunks = 0;
-    //     const fileUrl = fileUrls[currentIndex];
-    //     const res = await downloadFileContent(fileUrl);
-    //     console.log(`${res}一共下载了${currentIndex} | ${totalDownloadedBytes}MB \n`);
-    //     currentIndex = (currentIndex + 1) % fileUrls.length;
-    //   }
-    // } catch (error) {
-    //   const fileUrl = fileUrls[currentIndex];
-    //   await downloadFileContent(fileUrl);
-    //   console.log(`下载${fileUrl}失败${error}`);
-    //   currentIndex = (currentIndex + 1) % fileUrls.length;
-    // }
+    if (!canRun()) {
+      console.log('不在运行时间！');
+      await waitTimer(20000);
+      continue;
+    } else {
+      await waitTimer(2000);
+      try {
+        const fileUrl = fileUrls[currentIndex];
+        const res = await downloadFileContent(fileUrl);
+        console.log(` 编号${currentIndex}| ${(res / 1024 / 1024).toFixed(2)}MB \n`);
+        currentIndex = (currentIndex + 1) % fileUrls.length;
+      } catch (error) {
+        const fileUrl = fileUrls[currentIndex];
+        await downloadFileContent(fileUrl);
+        console.log(`下载${fileUrl}失败${error}`);
+        currentIndex = (currentIndex + 1) % fileUrls.length;
+      }
+    }
   }
 };
 
 downloadAllFilesContent(0);
 
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', async (err) => {
+  await waitTimer(10000);
+
   console.log('An uncaught exception occurred:', err);
-  //   downloadAllFilesContent(0);
+  downloadAllFilesContent(0);
 });

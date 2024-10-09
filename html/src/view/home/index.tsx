@@ -148,8 +148,7 @@ export default () => {
                             const res = await request.post('/api/system-exec-time-piker', {
                                 data: data
                             })
-                            console.log(res)
-                            message.success('设置成功');
+                            message.success(res.data);
                         }}
                         submitter={{
                             render(props, dom) {

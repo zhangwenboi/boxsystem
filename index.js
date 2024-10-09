@@ -50,6 +50,7 @@ app.post('/api/system-exec-time-piker', async (req, res) => {
         msg: 'success',
         code: 200
       });
+      fs.writeFileSync('runtimer.json', JSON.stringify({ start, end }));
     } else {
       res.status(200).send({
         data: '参数错误',
