@@ -10,6 +10,8 @@ NODE_APP="/root/project"
 # 设置node路径
 NODE_PATH="/root/node/bin/node"
 
+NPM_PATH="/root/node/bin/npm"
+
 LOG_FILE="/var/log/start_script.log"
 
 # 定义git操作超时时间（秒）
@@ -55,7 +57,9 @@ else
     REMOTE=$(git rev-parse @{u})
     if [ $LOCAL != $REMOTE ]; then
         log "检测到新版本，拉取最新代码"
+        git reset --hard HEAD
         git pull origin master
+        NPM_PATH i
         systemctl restart  StartScriptService
     fi
 fi
