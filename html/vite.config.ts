@@ -14,10 +14,10 @@ export default defineConfig({
     proxy: {
       '/api': {
         // 'target': 'http://192.168.1.108:3000',
-        // 'target': 'http://192.168.137.149:3000',
+        'target': 'http://192.168.137.90/api',
         // 'target': 'http://127.0.0.1:3000',
         // 'target': 'http://10.54.0.71:3000',
-        'target': 'http://localhost:3000',
+        // 'target': 'http://localhost:3000',
         'changeOrigin': false
       },
     }

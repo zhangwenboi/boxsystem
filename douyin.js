@@ -8,6 +8,7 @@ const fs = require('fs');
 // 统计总共下载的字节数(mb)
 let totalDownloadedBytes = 0;
 let fileUrls = [];
+let errorurllenth = 0;
 
 const getFileData = () => {
   try {
@@ -59,6 +60,7 @@ const getFileSize = async (url) => {
     return fileSize;
   } catch (error) {
     console.error('获取文件大小出错:' + error);
+    errorurllenth++;
     return null;
   }
 };
@@ -112,6 +114,10 @@ const downloadAllFilesContent = async (currentIndex = 0) => {
       continue;
     } else {
       await waitTimer(2000);
+      if (errorurllenth >= fileUrls.length) {
+        await getUrls();
+        errorurllenth = 0;
+      }
       try {
         const fileUrl = fileUrls[currentIndex];
         const res = await downloadFileContent(fileUrl);
