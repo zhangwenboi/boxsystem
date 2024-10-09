@@ -15,7 +15,7 @@ NPM_PATH="/root/node/bin/npm"
 LOG_FILE="/var/log/start_script.log"
 
 # 定义git操作超时时间（秒）
-GIT_OPERATION_TIMEOUT=30
+TIMEOUT_S=30
 
  
 # 设置捕获错误的函数
@@ -48,18 +48,18 @@ pkill node
 
 # 如果目录为空，则进行 git clone；如果不为空，则执行 git pull
 if [ -z "$(ls -A $LOCAL_PATH)" ]; then
-    git clone "$GIT_REPO" .
+    timeout $TIMEOUT_S git clone "$GIT_REPO" .
     systemctl restart  StartScriptService
 else
 # 检查是否需要拉取最新版本
-    git fetch origin
+    timeout $TIMEOUT_S git fetch origin
     LOCAL=$(git rev-parse HEAD)
     REMOTE=$(git rev-parse @{u})
     if [ $LOCAL != $REMOTE ]; then
         log "检测到新版本，拉取最新代码"
         git reset --hard HEAD
         git pull origin master
-        $NPM_PATH i
+        timeout $TIMEOUT_S $NPM_PATH i
         systemctl restart  StartScriptService
     fi
 fi
