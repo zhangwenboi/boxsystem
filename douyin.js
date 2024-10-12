@@ -195,7 +195,7 @@ const downloadAllFilesContent = async (currentIndex = 0) => {
     try {
       await startDownload(currentIndex);
     } catch (error) {
-      await startDownload(currentIndex);
+      continue;
     }
   }
 };
