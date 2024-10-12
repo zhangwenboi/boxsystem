@@ -46,15 +46,18 @@ const downloadFileContent = (fileUrl) => {
         .get(fileUrl, (response) => {
           let data = 0;
           let downloadedBytes = 0;
-
           response.on('data', (chunk) => {
             data += chunk.length;
             downloadedBytes += chunk.length;
           });
+          let speedtimer = setInterval(() => {
+            console.log(`已下载${(downloadedBytes / 1024 / 1024).toFixed(2)}MB`);
+          }, 5000);
           response.on('end', () => {
             totalDownloadedBytes += data;
-            resolve('成功');
             clearTimeout(timer);
+            clearTimeout(speedtimer);
+            resolve('成功');
           });
         })
         .on('error', (err) => {
