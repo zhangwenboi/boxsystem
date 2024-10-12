@@ -132,9 +132,7 @@ interface NetworkSpeed {
 }
 
 interface HomeTableData {
-        day: string;
-        rx: string;
-        tx: string;
-        total: string;
-        'avg. rate': string;
+    day: string;
+    rx: string;
+    avg: string;
 }

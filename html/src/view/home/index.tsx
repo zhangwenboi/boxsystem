@@ -16,68 +16,10 @@ const waitTimer = async (time: number) => {
         }, time)
     })
 }
-/**
- * 将 storage size 转换为人类可读的格式
- * @example "1.23GiB" => { value: 1.23, unit: "GB" }
- * @param {string} data
- * @returns {{ value: number, unit: string }}
- */
-
-function convertStorageUnit(data) {
-
-    if (!data) return {
-        value: 0,
-        unit: 'KB'
-    }
-    const units = {
-        "GiB": Math.pow(2, 30),
-        "GB": Math.pow(10, 9),
-        "MiB": Math.pow(2, 20),
-        "MB": Math.pow(10, 6),
-        "KiB": Math.pow(2, 10),
-        "KB": Math.pow(10, 3)
-    };
-    const value = data?.match(/\d/g)?.[0]
-    const fromUnit = data?.match(/[a-zA-Z]+/g)?.[0]
-
-    if (value && fromUnit) {
-        const result = value * units[fromUnit] / units[fromUnit?.replace('i', '')];
-        return {
-            value: result?.toFixed(2),
-            unit: fromUnit?.replace('i', '')
-        };
-    } else {
-        return {
-            value: 0,
-            unit: 'KB'
-        }
-    }
-}
 
 
-const formatbyKBMBGB = (value: number) => {
-    if (value < 1024) {
-        return {
-            value: value,
-            unit: 'KB'
-        }
-    } else if (value < 1024 * 1024) {
-        return {
-            value: (value / 1024).toFixed(2),
-            unit: 'MB'
-        }
-    } else if (value < 1024 * 1024 * 1024) {
-        return {
-            value: (value / 1024 / 1024).toFixed(2),
-            unit: 'GB'
-        }
-    } else {
-        return {
-            value: (value / 1024 / 1024 / 1024).toFixed(2),
-            unit: 'TB'
-        }
-    }
-}
+
+
 
 
 
@@ -93,13 +35,12 @@ const formatter: StatisticProps['formatter'] = (data: string) => {
 };
 export default () => {
     const [currentSystemInfo, setCurrentSystemInfo] = useState<any>()
-
     const [responsive, setResponsive] = useState(1920)
     const [tableData, setTableData] = useState<HomeTableData[]>([])
 
     const getData = async () => {
-        const res = await request.get<ResponseData<NetworkSpeed[]>>('/api/system-info-to-yes')
-        if (res.code === 200) {
+        const res = await request.get<ResponseData<NetworkSpeed[]>>('/api/system_status')
+        if (res.code === 1000) {
             setCurrentSystemInfo(res.data)
         }
     }
@@ -109,8 +50,6 @@ export default () => {
 
 
     const todayDownloadTotal = tableData?.[tableData.length - 2]?.rx
-
-    const memeryTotal = isNaN(currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) ? 0 : (currentSystemInfo?.mem?.used / currentSystemInfo?.mem?.total) * 100
 
     const column: ProColumns<HomeTableData>[] = [
         {
@@ -123,10 +62,10 @@ export default () => {
         },
         {
             title: '平均速率',
-            dataIndex: 'avg. rate',
+            dataIndex: 'avg',
         },
     ]
-    const monthTotal = tableData?.find(e => e.day === 'estimated')?.rx
+    const monthTotal = tableData?.reduce((a, b) => a + Number(b.rx.match(/\d+\.\d+/g)?.[0]), 0)
     return <div>
         <RcResizeObserver
             key="resize-observer"
@@ -196,9 +135,10 @@ export default () => {
                             />
                             <StatisticCard
                                 statistic={{
-                                    title: '本月流量',
+                                    title: '近30日流量',
                                     value: monthTotal,
-
+                                    suffix: 'GB',
+                                    precision: 2,
                                 }}
                             />
                         </ProCard>
@@ -206,17 +146,17 @@ export default () => {
                             <StatisticCard
                                 statistic={{
                                     title: '内存占用',
-                                    value: memeryTotal,
+                                    value: currentSystemInfo?.memory_used_percent || 0,
                                     precision: 2,
                                     suffix: '%',
                                 }}
                             />
                             <StatisticCard
                                 statistic={{
-                                    title: 'CPU',
-                                    value: `${currentSystemInfo?.cpu?.cores || 0}`,
-                                    suffix: '核',
-
+                                    title: 'CPU占用',
+                                    value: `${currentSystemInfo?.cpu_percent || 0}`,
+                                    suffix: '%',
+                                    precision: 2,
                                 }}
                             />
                         </ProCard>
@@ -230,9 +170,9 @@ export default () => {
                             fullScreen: true,
                             reload: true,
                         }}
-                        tooltip="注意GIB不等于GB," request={async () => {
-                            const res = await request.get<ResponseData<HomeTableData[]>>("/api/system-info-all")
-                            if (res.code === 200) {
+                        tooltip="数据更新有延迟，仅供参考" request={async () => {
+                            const res = await request.get<ResponseData<HomeTableData[]>>("/api/month_info")
+                            if (res.code === 1000) {
                                 setTableData(res.data)
                                 return {
                                     data: res.data,
@@ -249,7 +189,7 @@ export default () => {
                         }} />
                 </ProCard>
 
-                <LineChat />
+                <CurrentLine />
 
             </ProCard>
         </RcResizeObserver>
@@ -260,116 +200,67 @@ export default () => {
 }
 
 
-const LineChat = () => {
-    const [items, setItems] = useState<MenuProps["items"]>()
-    const [active, setActive] = useState<string>('eth0')
-    const [data, setData] = useState({})
-
-    // const
-    const getData = async () => {
-        const time = dayjs().format('HH:mm:ss')
-        const res = await request.get<ResponseData<NetworkSpeed[]>>('/api/system-network-info')
-        if (res.code === 200) {
-            setItems(items => {
-                if (!items?.length || items.length !== res.data?.length) {
-                    return res.data.map(e => {
-                        return {
-                            label: e.iface,
-                            key: e.iface
-                        }
-                    })
-                }
-                return items
-            })
-            setData(data => {
-                const newData = Object.assign({}, data)
-                let total = 0
-
-                res.data?.forEach(item => {
-                    total += item.rx_bytes
-
-                    const prodata = {
-                        'total': (item.rx_bytes / 1024).toFixed(2),
-                        'title': item.iface,
-                        'label': time,
-                        'value': parseInt((item.rx_sec / 1024).toFixed(2)),
-                        'category': '下载'
-                    }
-                    const prodata2 = {
-                        'value': parseInt((item.tx_sec / 10240).toFixed(2)),
-                        'label': time,
-                        'title': item.iface,
-                        'total': (item.tx_bytes / 10240).toFixed(2),
-                        'category': '上传'
-                    }
-                    if (newData[item.iface]) {
-                        newData[item.iface].push(prodata, prodata2)
-                    } else {
-                        newData[item.iface] = [prodata, prodata2]
-                    }
-
-                })
-
-                return newData
-            })
-            await waitTimer(3000)
-            getData()
-        }
-    }
-
-    useEffect(() => {
-        getData()
-    }, [])
 
 
-
+const CurrentLine = () => {
 
     return <StatisticCard
         title="流量走势"
-        extra={<Dropdown menu={{
-            items, onClick: (e) => {
-                setActive(e.key)
-            }
-        }}>
-            <a onClick={(e) => e.preventDefault()}>
-                <EllipsisOutlined />
-                更多网卡
-            </a>
-        </Dropdown>}
+        extra={false}
         chart={
-            <ColumnChart data={data} active={active} />
+            <ColumnChart />
         }
     />
-}
+};
 
 
-
-const ColumnChart = ({ data, active }) => {
+const ColumnChart = () => {
+    const [data, setData] = useState([])
+    useEffect(() => {
+        const getData = async () => {
+            const res = await request.get<ResponseData<NetworkSpeed[]>>('/api/network_speed')
+            if (res.code === 1000) {
+                setData((rdata) => {
+                    return [
+                        ...rdata,
+                        {
+                            label: dayjs().format('HH:mm:ss'),
+                            value: Number(res.data),
+                        }
+                    ]
+                })
+                await waitTimer(2000)
+                getData()
+            }
+        }
+        getData()
+    }, [])
     const config = {
-        data: data[active] || [],
+        data: data || [],
         xField: 'label',
         yField: 'value',
-        seriesField: 'category',
+        // seriesField: 'category',
         yAxis: {
             label: {
                 // 数值格式化为千分位
-                formatter: (v) => `${v}KB`
+                formatter: (v) => `${v}MB`
             },
         },
         tooltip: {
-            title: '上传下载速度',
+            title: '下载速度',
             formatter: (data) => {
                 return {
-                    name: data.category,
-                    value: formatbyKBMBGB(data.value).value + formatbyKBMBGB(data.value).unit
+                    name: data.label,
+                    value: data.value
                 }
             }
         },
         color: ['#1979C9', '#D62A0D', '#FAA219'],
         smooth: true,
         animation: false,
+
     };
-    return <Line {...config} />
+    return <Line  {...config} />
 }
 
 

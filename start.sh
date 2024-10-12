@@ -125,4 +125,4 @@ run_all_js() {
 } 
 
 # 在每次执行时运行 JavaScript 文件
-run_all_js
+# run_all_js
