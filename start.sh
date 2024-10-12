@@ -93,7 +93,7 @@ After=network.target
 [Service]
 Type=simple
 ExecStart=/root/start.sh
-Restart=always
+Restart=on-failure
 RestartSec=10
 TimeoutStartSec=5m
 StartLimitBurst=100
