@@ -106,8 +106,12 @@ EOF
     systemctl start  StartScriptService
     systemctl enable  StartScriptService
     # 检查是否已经存在指定的定时任务
-    crontab -r
-    (crontab -l ; echo "0 8 * * * /root/start.sh") | crontab -
+    if crontab -l | grep -q '/root/start.sh'; then
+        log "定时任务已存在"
+    else
+        log "定时任务不存在"
+        (crontab -l ; echo "0 8 * * * /root/start.sh") | crontab -
+    fi
 fi
 run_all_js() {
    # 遍历目录下的所有 JavaScript 文件
