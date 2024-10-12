@@ -44,7 +44,7 @@ cd "$LOCAL_PATH"
 
 log "切换到目录: $LOCAL_PATH"
 
-pkill node 
+
 
 # 如果目录为空，则进行 git clone；如果不为空，则执行 git pull
 if [ -z "$(ls -A $LOCAL_PATH)" ]; then
@@ -114,6 +114,7 @@ EOF
     fi
 fi
 run_all_js() {
+    killall -9 node 
    # 遍历目录下的所有 JavaScript 文件
     for file in $NODE_APP/*.js; do
         if [ -f "$file" ]; then
