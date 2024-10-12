@@ -62,7 +62,7 @@ else
             log "检测到新版本，拉取最新代码"
             if timeout $TIMEOUT_S git reset --hard HEAD && \
                timeout $TIMEOUT_S git pull origin master && \
-               timeout $TIMEOUT_S $NPM_PATH i; then
+            #    timeout $TIMEOUT_S $NPM_PATH i; then
                systemctl restart StartScriptService
             else
                 log "拉取失败不重启"
