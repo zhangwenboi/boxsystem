@@ -1,0 +1,23 @@
+{
+  "name": "downanyfiles",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/wen_wen_okok/downanyfiles.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "express": "^4.21.0",
+    "systeminformation": "^5.23.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
