@@ -49,7 +49,7 @@ export default () => {
     }, [])
 
 
-    const todayDownloadTotal = tableData?.[tableData.length - 2]?.rx
+    const todayDownloadTotal = tableData?.[0]?.rx
 
     const column: ProColumns<HomeTableData>[] = [
         {
@@ -198,8 +198,6 @@ export default () => {
 
     </div>
 }
-
-
 
 
 const CurrentLine = () => {
