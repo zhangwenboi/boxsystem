@@ -1,8 +1,0 @@
-/** @format */
-
-@tailwind components;
-@tailwind utilities;
-
-.ant-pro-page-container-children-container {
-  padding-inline: 20px;
-}
