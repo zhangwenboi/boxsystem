@@ -10,17 +10,17 @@ export default defineConfig({
     deleteOriginalAssets: true, // 设置是否删除原文件
     skipIfLargerOrEqual: true, // 如果压缩后的文件大小与原文件大小一致或者更大时，不进行压缩
   })],
+  base: './',
   // 更改build输出文件夹名
   build: {
     outDir: 'html',
-    minify: 'esbuild',
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true
       }
-
     },
+
     rollupOptions: {
       output: {
         // 配置rollup输出选项

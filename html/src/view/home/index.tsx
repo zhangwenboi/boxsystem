@@ -56,6 +56,7 @@ export default () => {
         },
         {
             title: '平均速率',
+            tooltip: '下载速率统计可能不准确，仅供参考',
             dataIndex: 'avg',
         },
     ]
@@ -70,7 +71,7 @@ export default () => {
             <ProCard
                 title="数据概览"
                 extra={<>
-                    <ModalForm
+                    {/* <ModalForm
                         title="设置运行时间"
                         layout="horizontal"
                         width={responsive < 596 ? '80%' : '60%'}
@@ -109,7 +110,7 @@ export default () => {
                             checkedChildren: "开启", unCheckedChildren: "关闭"
                         }} />
 
-                    </ModalForm>
+                    </ModalForm> */}
                     {dayjs().format('YYYY-MM-DD HH:mm:ss')}
                 </>}
                 split={responsive < 1280 ? 'horizontal' : 'vertical'}
