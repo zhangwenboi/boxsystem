@@ -22,7 +22,7 @@ export default defineConfig({
       {
         name: '@ant-design/pro-components',
         var: 'antd',
-        path: 'umd/pro-components.min.js',
+        path: 'https://cdn.jsdelivr.net/npm/@ant-design/pro-components@2.6.51/lib/version.min.js',
       },
       {
         name: '@ant-design/icons',
