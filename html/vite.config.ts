@@ -31,9 +31,9 @@ export default defineConfig({
         manualChunks: {
           antd: ['antd'],
           'react-dom': ['react-dom'],
-          '@ant-design/pro-components': ['@ant-design/pro-components'],
-          '@ant-design/icons': ['@ant-design/icons'],
-          '@ant-design/charts': ['@ant-design/charts'],
+          'ant-design-pro-components': ['@ant-design/pro-components'],
+          'icons': ['@ant-design/icons'],
+          'ant-charts': ['@ant-design/charts'],
           'rc-resize-observer': ['rc-resize-observer'],
           'react-countup': ['react-countup'],
           'react-router': ['react-router'],
