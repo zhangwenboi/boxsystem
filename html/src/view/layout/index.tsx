@@ -1,44 +1,16 @@
-import {
-    CaretDownFilled,
-    DoubleRightOutlined,
-    PlusCircleFilled,
-    SearchOutlined,
-} from '@ant-design/icons';
+
 import {
     PageContainer,
-    ProCard,
     ProConfigProvider,
     ProLayout,
 } from '@ant-design/pro-components';
 import {
     ConfigProvider,
-    Divider,
-    Input,
-    Popover,
-    theme,
 } from 'antd';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import defaultProps from './_defaultProps';
 import { Outlet } from 'react-router';
 
-const Item: React.FC<{ children: React.ReactNode }> = (props) => {
-    const { token } = theme.useToken();
-    return (
-        <div
-
-            style={{
-                width: '33.33%',
-            }}
-        >
-            {props.children}
-            <DoubleRightOutlined
-                style={{
-                    marginInlineStart: 4,
-                }}
-            />
-        </div>
-    );
-};
 
 
 
