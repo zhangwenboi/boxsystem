@@ -2,68 +2,47 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 // 查找文件
 import { compression } from 'vite-plugin-compression2'
-// vite.config.ts
-import importToCDN, { autoComplete } from 'vite-plugin-cdn-import'
-// https://vitejs.dev/config/
 
 
 export default defineConfig({
   plugins: [react(), compression({
-    threshold: 200000, // 设置只有超过 2k 的文件才执行压缩
+    threshold: 100000, // 设置只有超过 2k 的文件才执行压缩
     deleteOriginalAssets: true, // 设置是否删除原文件
     skipIfLargerOrEqual: true, // 如果压缩后的文件大小与原文件大小一致或者更大时，不进行压缩
-  }), importToCDN({
-    modules: [
-      autoComplete('react'),
-      autoComplete('react-dom'),
-      autoComplete('dayjs'),
-      autoComplete('antd'),
-      autoComplete('react-router-dom'),
-      {
-        name: '@ant-design/pro-components',
-        var: 'antd',
-        path: 'https://cdn.jsdelivr.net/npm/@ant-design/pro-components@2.6.51/lib/version.min.js',
-      },
-      {
-        name: '@ant-design/icons',
-        var: 'antd',
-        path: 'https://cdn.jsdelivr.net/npm/@ant-design/icons@5.5.1/dist/index.umd.min.js',
-      },
-      {
-        name: '@ant-design/charts',
-        var: 'antd',
-        path: 'https://cdn.jsdelivr.net/npm/@ant-design/charts@1.4.2/dist/charts.min.js',
-      },
-      {
-        name: 'query-string',
-        var: 'query-string',
-        path: 'https://cdn.jsdelivr.net/npm/query-string@9.1.1/index.min.js',
-      },
-      {
-        name: 'rc-resize-observer',
-        var: 'rc-resize-observer',
-        path: 'https://cdn.jsdelivr.net/npm/rc-resize-observer@1.4.0/lib/index.min.js',
-      },
-      {
-        name: 'react-countup',
-        var: 'react-countup',
-        path: 'https://cdn.jsdelivr.net/npm/react-countup@6.5.3/build/index.min.js',
-      },
-      {
-        name: 'react-transition-group',
-        var: 'react-transition-group',
-        path: 'https://cdn.jsdelivr.net/npm/react-transition-group@4.4.5/dist/react-transition-group.min.js',
-      },
-      {
-        name: 'umi-request',
-        var: 'umi-request',
-        path: 'https://cdn.jsdelivr.net/npm/umi-request@1.4.0/dist/index.min.js',
-      },
-    ]
   })],
   // 更改build输出文件夹名
   build: {
     outDir: 'html',
+    minify: 'esbuild',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+
+    },
+    rollupOptions: {
+      output: {
+        // 配置rollup输出选项
+        // Static resource classification and packaging//静态资源分类打包
+        chunkFileNames: `assets/js/[name]-[hash].js`, //代码块文件名
+        entryFileNames: `assets/js/[name]-[hash].js`, //入口文件名
+        assetFileNames: `assets/[ext]/[name]-[hash].[ext]`, // 资源文件名
+        manualChunks: {
+          antd: ['antd'],
+          'react-dom': ['react-dom'],
+          '@ant-design/pro-components': ['@ant-design/pro-components'],
+          '@ant-design/icons': ['@ant-design/icons'],
+          '@ant-design/charts': ['@ant-design/charts'],
+          'rc-resize-observer': ['rc-resize-observer'],
+          'react-countup': ['react-countup'],
+          'react-router': ['react-router'],
+          'react-router-dom': ['react-router-dom'],
+          'react-transition-group': ['react-transition-group'],
+          'umi-request': ['umi-request']
+        }
+      }
+    }
   },
   server: {
     proxy: {

@@ -19,12 +19,6 @@ const waitTimer = async (time: number) => {
 
 
 
-
-
-
-
-
-
 const formatter: StatisticProps['formatter'] = (data: string) => {
     if (data) {
         const value = data?.split(/\ /g) || [0, 'KB']
