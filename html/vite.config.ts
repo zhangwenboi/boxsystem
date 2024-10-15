@@ -6,25 +6,10 @@ import { compression } from 'vite-plugin-compression2'
 import importToCDN, { autoComplete } from 'vite-plugin-cdn-import'
 // https://vitejs.dev/config/
 
-const cdnurls = {
-  "@ant-design/charts": "^1.4.2",
-  "@ant-design/icons": "^5.5.1",
-  "@ant-design/pro-components": "^2.6.51",
-  "antd": "^5.15.3",
-  "dayjs": "^1.11.13",
-  "query-string": "^9.0.0",
-  "rc-resize-observer": "^1.4.0",
-  "react": "^18.2.0",
-  "react-countup": "^6.5.3",
-  "react-dom": "^18.2.0",
-  "react-router": "^6.22.3",
-  "react-router-dom": "^6.22.3",
-  "react-transition-group": "^4.4.5",
-  "umi-request": "^1.4.0"
-}
+
 export default defineConfig({
   plugins: [react(), compression({
-    threshold: 2000, // 设置只有超过 2k 的文件才执行压缩
+    threshold: 200000, // 设置只有超过 2k 的文件才执行压缩
     deleteOriginalAssets: true, // 设置是否删除原文件
     skipIfLargerOrEqual: true, // 如果压缩后的文件大小与原文件大小一致或者更大时，不进行压缩
   }), importToCDN({

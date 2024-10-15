@@ -1,0 +1,68 @@
+<!-- @format -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.13/dayjs.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-router-dom@6.26.2/dist/umd/react-router-dom.production.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/antd@5.15.3/dist/antd.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ant-design/pro-components@2.7.19/umd/pro-components.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ant-design/icons@5.5.1/dist/index.umd.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ant-design/charts@1.4.2/dist/index.umd.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/query-string@9.0.0/dist/index.umd.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/rc-resize-observer@1.4.0/dist/index.umd.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-countup@6.5.3/dist/index.umd.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-transition-group@4.4.5/dist/react-transition-group.umd.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/umi-request@1.4.0/dist/index.umd.min.js" crossorigin="anonymous"></script>
+
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>系统信息</title>
+    <script type="module" crossorigin src="/assets/index-CWwX8N6M.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DsSNqV4T.css">
+  </head>
+  <body>
+    <div id="index-loading">
+      <div class="text">拉下行系统</div>
+      <div id="index-loading-s"></div>
+    </div>
+
+    <div id="root"></div>
+
+  </body>
+  <style>
+    #index-loading {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+    #index-loading .text {
+      font-size: 48px;
+      font-weight: 900;
+      color: black;
+      text-align: center;
+    }
+    #index-loading-s {
+      --loding-width: 30px;
+      width: var(--loding-width);
+      height: var(--loding-width);
+      border: 2px solid #55a722;
+      border-top-color: transparent;
+      border-radius: 100%;
+      animation: spin 0.75s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</html>
