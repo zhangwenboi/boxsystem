@@ -10,7 +10,7 @@ export default defineConfig({
     deleteOriginalAssets: true, // 设置是否删除原文件
     skipIfLargerOrEqual: true, // 如果压缩后的文件大小与原文件大小一致或者更大时，不进行压缩
   })],
-  base: './',
+  base: '/',
   // 更改build输出文件夹名
   build: {
     outDir: 'html',
