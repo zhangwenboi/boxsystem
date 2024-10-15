@@ -11,12 +11,6 @@ import { useState } from 'react';
 import defaultProps from './_defaultProps';
 import { Outlet } from 'react-router';
 
-
-
-
-
-
-
 export default () => {
 
     const [pathname, setPathname] = useState('/home');
@@ -67,10 +61,11 @@ export default () => {
                         )}
                     >
                         <PageContainer
+                            token={{
+                                paddingInlinePageContainerContent: 20
+                            }}
                             subTitle="下行盒子拉取查看"
-
                         >
-
                             <Outlet />
                         </PageContainer>
 
@@ -78,6 +73,6 @@ export default () => {
                     </ProLayout>
                 </ConfigProvider>
             </ProConfigProvider>
-        </div>
+        </div >
     );
 };

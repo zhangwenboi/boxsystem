@@ -31,9 +31,15 @@ export default defineConfig({
     modules: [
       autoComplete('react'),
       autoComplete('react-dom'),
-      autoComplete('antd'),
+
       autoComplete('dayjs'),
       autoComplete('react-router-dom'),
+
+      {
+        name: 'antd',
+        var: 'antd',
+        path: 'https://cdn.jsdelivr.net/npm/antd@5.15.3/dist/antd.min.js',
+      },
       {
         name: '@ant-design/pro-components',
         var: 'antd',
