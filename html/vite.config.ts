@@ -16,15 +16,9 @@ export default defineConfig({
     modules: [
       autoComplete('react'),
       autoComplete('react-dom'),
-
       autoComplete('dayjs'),
+      autoComplete('antd'),
       autoComplete('react-router-dom'),
-
-      {
-        name: 'antd',
-        var: 'antd',
-        path: 'https://cdn.jsdelivr.net/npm/antd@5.15.3/dist/antd.min.js',
-      },
       {
         name: '@ant-design/pro-components',
         var: 'antd',
@@ -38,32 +32,32 @@ export default defineConfig({
       {
         name: '@ant-design/charts',
         var: 'antd',
-        path: 'https://cdn.jsdelivr.net/npm/@ant-design/charts@1.4.2/dist/index.umd.min.js',
+        path: 'https://cdn.jsdelivr.net/npm/@ant-design/charts@1.4.2/dist/charts.min.js',
       },
       {
         name: 'query-string',
         var: 'query-string',
-        path: 'https://cdn.jsdelivr.net/npm/query-string@9.0.0/dist/index.umd.min.js',
+        path: 'https://cdn.jsdelivr.net/npm/query-string@9.1.1/index.min.js',
       },
       {
         name: 'rc-resize-observer',
         var: 'rc-resize-observer',
-        path: 'https://cdn.jsdelivr.net/npm/rc-resize-observer@1.4.0/dist/index.umd.min.js',
+        path: 'https://cdn.jsdelivr.net/npm/rc-resize-observer@1.4.0/lib/index.min.js',
       },
       {
         name: 'react-countup',
         var: 'react-countup',
-        path: 'https://cdn.jsdelivr.net/npm/react-countup@6.5.3/dist/index.umd.min.js',
+        path: 'https://cdn.jsdelivr.net/npm/react-countup@6.5.3/build/index.min.js',
       },
       {
         name: 'react-transition-group',
         var: 'react-transition-group',
-        path: 'https://cdn.jsdelivr.net/npm/react-transition-group@4.4.5/dist/react-transition-group.umd.min.js',
+        path: 'https://cdn.jsdelivr.net/npm/react-transition-group@4.4.5/dist/react-transition-group.min.js',
       },
       {
         name: 'umi-request',
         var: 'umi-request',
-        path: 'https://cdn.jsdelivr.net/npm/umi-request@1.4.0/dist/index.umd.min.js',
+        path: 'https://cdn.jsdelivr.net/npm/umi-request@1.4.0/dist/index.min.js',
       },
     ]
   })],
