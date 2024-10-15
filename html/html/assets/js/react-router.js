@@ -1,4 +1,4 @@
-import{r as u}from"./antd-CYONuGoU.js";/**
+import{r as u}from"./antd.js";/**
  * @remix-run/router v1.19.2
  *
  * Copyright (c) Remix Software Inc.
