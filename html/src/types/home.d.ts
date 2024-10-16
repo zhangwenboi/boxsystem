@@ -136,3 +136,11 @@ interface HomeTableData {
     rx: string;
     avg: string;
 }
+interface Setting {
+    video_thread: number;
+    live_thread: number;
+    time: null;
+    video_type: string;
+    max_flow: number;
+    max_mb: number;
+}

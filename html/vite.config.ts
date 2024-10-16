@@ -32,7 +32,6 @@ export default defineConfig({
           'react-countup': ['react-countup'],
           'react-router': ['react-router'],
           'react-router-dom': ['react-router-dom'],
-          'react-transition-group': ['react-transition-group'],
           'umi-request': ['umi-request']
         }
       }
@@ -42,7 +41,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         // 'target': 'http://192.168.1.108:3000',
-        'target': 'http://192.168.2.86',
+        'target': 'http://10.147.20.104',
         // 'target': 'http://127.0.0.1:3000',
         // 'target': 'http://10.54.0.71:3000',
         // 'target': 'http://localhost:3000',

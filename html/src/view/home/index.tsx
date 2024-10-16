@@ -1,4 +1,4 @@
-import { DrawerForm, ModalForm, ProCard, ProColumns, ProFormDependency, ProFormSlider, ProFormSwitch, ProFormTimePicker, ProTable, StatisticCard } from "@ant-design/pro-components"
+import { DrawerForm, ModalForm, ProCard, ProColumns, ProFormDependency, ProFormDigit, ProFormDigitRange, ProFormSelect, ProFormSlider, ProFormSwitch, ProFormText, ProFormTimePicker, ProTable, StatisticCard } from "@ant-design/pro-components"
 import { EllipsisOutlined } from "@ant-design/icons"
 import { useEffect, useState } from "react"
 import request from "../../api"
@@ -71,18 +71,29 @@ export default () => {
             <ProCard
                 title="数据概览"
                 extra={<>
-                    {/* <ModalForm
-                        title="设置运行时间"
+                    <ModalForm<Setting>
+                        title="设置模式"
                         layout="horizontal"
-                        width={responsive < 596 ? '80%' : '60%'}
+                        labelCol={{ span: 8 }}
+                        request={async () => {
+                            const res = await request.get<ResponseData<Setting>>('/api/conf_info/')
+                            if (res.code === 1000) {
+                                return res.data
+                            }
+                        }}
+                        width={responsive > 1000 ? 800 : 'md'}
                         trigger={
-                            <a className="mx-2"> 设置 </a>
+                            <a className="mx-2"> 系统设置 </a>
                         }
                         onFinish={async (data) => {
-                            const res = await request.post('/api/system-exec-time-piker', {
+                            const res = await request.post('/api/update_conf/', {
                                 data: data
                             })
-                            message.success(res.data);
+                            if (res.code === 1000) {
+                                message.success(`修改成功, 稍后生效！`);
+                            } else {
+                                message.error('修改失败，请稍后再试');
+                            }
                         }}
                         submitter={{
                             render(props, dom) {
@@ -92,25 +103,74 @@ export default () => {
                             },
                         }}
                     >
-                        <ProFormDependency name={['repeat']}  >
+                        {/* <ProFormDependency name={['repeat']}  >
                             {
                                 ({ repeat }) => {
-                                    return <ProFormTimePicker.RangePicker rules={repeat ? [] : [
-                                        {
-                                            required: true
-                                        }
-                                    ]} tooltip="只会在此时间段内运行" name='time' disabled={repeat} label="运行时间" fieldProps={{
-                                        format: 'HH:mm'
-                                    }} />
+                                    return <ProFormTimePicker.RangePicker
+                                        width={'md'}
+                                        rules={repeat ? [] : [
+                                            {
+                                                required: true
+                                            }
+                                        ]} tooltip="只会在此时间段内运行" name='time' disabled={repeat} label="运行时间" fieldProps={{
+                                            format: 'HH:mm'
+                                        }} />
+                                }
+                            }
+                        </ProFormDependency> */}
+
+                        <ProFormSelect name="video_type"
+                            label="下行流量类型"
+                            tooltip="下行基本都是省外业务，只是业务不同"
+                            options={[
+                                {
+                                    label: '抖音快手视频',
+                                    value: 'data'
+                                },
+
+                                {
+                                    label: '抖音直播',
+                                    value: 'dlive'
+                                },
+                                {
+                                    label: '快手直播',
+                                    value: 'klive'
+                                },
+                            ]}
+                            width={responsive < 596 ? 'sm' : 'md'}
+                        />
+                        <ProFormDependency name={['video_type']}  >
+                            {
+                                ({ video_type }) => {
+
+                                    return <ProFormSelect
+                                        name="video_thread"
+                                        label={`${video_type === 'data' ? '同时下载线程' : '同时直播线程'}`}
+                                        tooltip="同时进行几个下载，越多越快"
+                                        width={responsive < 596 ? 'sm' : 'md'}
+                                        options={new Array(video_type === 'data' ? 6 : 12).fill(0).map((_, index) => ({ label: index + 1 + ' 个线程', value: index + 1 }))} />
                                 }
                             }
                         </ProFormDependency>
 
-                        <ProFormSwitch name="repeat" label='持续运行' tooltip="开启后将全天运行" fieldProps={{
-                            checkedChildren: "开启", unCheckedChildren: "关闭"
-                        }} />
+                        <ProFormText
+                            name="max_flow"
+                            label="当天最大流量(GB)"
+                            tooltip="当天下载的最大流量(GB)"
+                            allowClear={false}
+                            width={responsive < 596 ? 'sm' : 'md'} />
+                        <ProFormText
+                            name="max_mb"
+                            label="线程最大速度"
+                            addonAfter="MB/秒"
+                            tooltip="每个线程下载时的最大速度(MB/s)"
+                            width={responsive < 596 ? 'sm' : 'md'} />
 
-                    </ModalForm> */}
+                        {/* <ProFormSwitch name="repeat" label='持续运行' tooltip="开启后将全天运行" fieldProps={{
+                            checkedChildren: "开启", unCheckedChildren: "关闭"
+                        }} /> */}
+
+                    </ModalForm>
                     {dayjs().format('YYYY-MM-DD HH:mm:ss')}
                 </>}
                 split={responsive < 1280 ? 'horizontal' : 'vertical'}
@@ -165,6 +225,7 @@ export default () => {
                             fullScreen: true,
                             reload: true,
                         }}
+
                         tooltip="数据更新有延迟，仅供参考" request={async () => {
                             const res = await request.get<ResponseData<HomeTableData[]>>("/api/month_info")
                             if (res.code === 1000) {
@@ -180,11 +241,17 @@ export default () => {
                             }
                         }} search={false} columns={column} pagination={{
                             hideOnSinglePage: true,
-
+                            defaultPageSize: 7
                         }} />
                 </ProCard>
 
-                <CurrentLine />
+                <StatisticCard
+                    title="流量走势"
+                    extra={false}
+                    chart={
+                        <ColumnChart />
+                    }
+                />
 
             </ProCard>
         </RcResizeObserver>
@@ -195,16 +262,7 @@ export default () => {
 }
 
 
-const CurrentLine = () => {
 
-    return <StatisticCard
-        title="流量走势"
-        extra={false}
-        chart={
-            <ColumnChart />
-        }
-    />
-};
 
 
 const ColumnChart = () => {
