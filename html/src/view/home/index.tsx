@@ -17,7 +17,115 @@ const waitTimer = async (time: number) => {
     })
 }
 
+const SettingCard = ({ width }) => {
+    return <ModalForm<Setting>
+        title="设置模式"
+        layout="horizontal"
+        labelCol={{ span: 8 }}
+        request={async () => {
+            const res = await request.get<ResponseData<Setting>>('/api/conf_info/')
+            if (res.code === 1000) {
+                return res.data
+            }
+        }}
+        width={width}
+        trigger={
+            <a className="mx-2"> 系统设置 </a>
+        }
+        onFinish={async (data) => {
+            const res = await request.post('/api/update_conf/', {
+                data: data
+            })
+            if (res.code === 1000) {
+                message.success(`修改成功, 稍后生效！`);
+            } else {
+                message.error('修改失败，请稍后再试');
+            }
+        }}
+        submitter={{
+            render(props, dom) {
+                return <div className=" flex gap-x-2 justify-center w-full ">
+                    {dom}
+                </div>
+            },
+        }}
+    >
+        {/* <ProFormDependency name={['repeat']}  >
+        {
+            ({ repeat }) => {
+                return <ProFormTimePicker.RangePicker
+                    width={'md'}
+                    rules={repeat ? [] : [
+                        {
+                            required: true
+                        }
+                    ]} tooltip="只会在此时间段内运行" name='time' disabled={repeat} label="运行时间" fieldProps={{
+                        format: 'HH:mm'
+                    }} />
+            }
+        }
+    </ProFormDependency> */}
 
+        <ProFormSelect name="video_type"
+            label="下行流量类型"
+            tooltip="下行基本都是省外业务，只是业务不同"
+            options={[
+                {
+                    label: '抖音快手视频',
+                    value: 'data'
+                },
+
+                {
+                    label: '抖音直播',
+                    value: 'dlive'
+                },
+                {
+                    label: '快手直播',
+                    value: 'klive'
+                },
+            ]}
+            width={'md'}
+        />
+        <ProFormDependency name={['video_type']}  >
+            {
+                ({ video_type }, form) => {
+                    const ifVideo = video_type === 'data'
+                    ifVideo && form.getFieldValue('video_thread') > 6 && form.setFieldsValue({ video_thread: 6 })
+                    return <ProFormSelect
+                        name="video_thread"
+                        label={`${ifVideo ? '同时下载线程' : '同时直播线程'}`}
+                        tooltip="同时进行几个下载，越多越快"
+                        width={'md'}
+                        options={new Array(ifVideo ? 10 : 20).fill(0).map((_, index) => ({ label: index + 1 + ' 个线程', value: index + 1 }))} />
+                }
+            }
+        </ProFormDependency>
+
+        <ProFormText
+            name="max_flow"
+            label="当天最大流量"
+            tooltip="当天下载的最大流量(GB)"
+            allowClear={false}
+            fieldProps={{
+                addonAfter: "GB/天"
+            }}
+            width={'md'} />
+        <ProFormText
+            name="max_mb"
+            label="线程最大速度"
+            allowClear={false}
+            fieldProps={{
+                addonAfter: "MB/秒"
+            }}
+            tooltip="每个线程下载时的最大速度(MB/s)"
+            width={'md'} />
+
+        {/* <ProFormSwitch name="repeat" label='持续运行' tooltip="开启后将全天运行" fieldProps={{
+        checkedChildren: "开启", unCheckedChildren: "关闭"
+    }} /> */}
+
+    </ModalForm>
+}
 
 const formatter: StatisticProps['formatter'] = (data: string) => {
     if (data) {
@@ -71,107 +179,8 @@ export default () => {
             <ProCard
                 title="数据概览"
                 extra={<>
-                    <ModalForm<Setting>
-                        title="设置模式"
-                        layout="horizontal"
-                        labelCol={{ span: 8 }}
-                        request={async () => {
-                            const res = await request.get<ResponseData<Setting>>('/api/conf_info/')
-                            if (res.code === 1000) {
-                                return res.data
-                            }
-                        }}
-                        width={responsive > 1000 ? 800 : 'md'}
-                        trigger={
-                            <a className="mx-2"> 系统设置 </a>
-                        }
-                        onFinish={async (data) => {
-                            const res = await request.post('/api/update_conf/', {
-                                data: data
-                            })
-                            if (res.code === 1000) {
-                                message.success(`修改成功, 稍后生效！`);
-                            } else {
-                                message.error('修改失败，请稍后再试');
-                            }
-                        }}
-                        submitter={{
-                            render(props, dom) {
-                                return <div className=" flex gap-x-2 justify-center w-full ">
-                                    {dom}
-                                </div>
-                            },
-                        }}
-                    >
-                        {/* <ProFormDependency name={['repeat']}  >
-                            {
-                                ({ repeat }) => {
-                                    return <ProFormTimePicker.RangePicker
-                                        width={'md'}
-                                        rules={repeat ? [] : [
-                                            {
-                                                required: true
-                                            }
-                                        ]} tooltip="只会在此时间段内运行" name='time' disabled={repeat} label="运行时间" fieldProps={{
-                                            format: 'HH:mm'
-                                        }} />
-                                }
-                            }
-                        </ProFormDependency> */}
-
-                        <ProFormSelect name="video_type"
-                            label="下行流量类型"
-                            tooltip="下行基本都是省外业务，只是业务不同"
-                            options={[
-                                {
-                                    label: '抖音快手视频',
-                                    value: 'data'
-                                },
-
-                                {
-                                    label: '抖音直播',
-                                    value: 'dlive'
-                                },
-                                {
-                                    label: '快手直播',
-                                    value: 'klive'
-                                },
-                            ]}
-                            width={responsive < 596 ? 'sm' : 'md'}
-                        />
-                        <ProFormDependency name={['video_type']}  >
-                            {
-                                ({ video_type }) => {
-
-                                    return <ProFormSelect
-                                        name="video_thread"
-                                        label={`${video_type === 'data' ? '同时下载线程' : '同时直播线程'}`}
-                                        tooltip="同时进行几个下载，越多越快"
-                                        width={responsive < 596 ? 'sm' : 'md'}
-                                        options={new Array(video_type === 'data' ? 6 : 12).fill(0).map((_, index) => ({ label: index + 1 + ' 个线程', value: index + 1 }))} />
-                                }
-                            }
-                        </ProFormDependency>
-
-                        <ProFormText
-                            name="max_flow"
-                            label="当天最大流量(GB)"
-                            tooltip="当天下载的最大流量(GB)"
-                            allowClear={false}
-                            width={responsive < 596 ? 'sm' : 'md'} />
-                        <ProFormText
-                            name="max_mb"
-                            label="线程最大速度"
-                            addonAfter="MB/秒"
-                            tooltip="每个线程下载时的最大速度(MB/s)"
-                            width={responsive < 596 ? 'sm' : 'md'} />
-
-                        {/* <ProFormSwitch name="repeat" label='持续运行' tooltip="开启后将全天运行" fieldProps={{
-                            checkedChildren: "开启", unCheckedChildren: "关闭"
-                        }} /> */}
-
-                    </ModalForm>
-                    {dayjs().format('YYYY-MM-DD HH:mm:ss')}
+                    <SettingCard width={responsive > 1000 ? 800 : 'md'} />
+                    {responsive > 1280 && dayjs().format('YYYY-MM-DD HH:mm:ss')}
                 </>}
                 split={responsive < 1280 ? 'horizontal' : 'vertical'}
                 headerBordered
@@ -217,10 +226,8 @@ export default () => {
                         </ProCard>
                     </ProCard>
                     <ProTable
-                        toolbar={{
-                            title: '近日流量'
-                        }}
-                        options={responsive > 596 ? false : {
+                        headerTitle="近30日流量"
+                        options={responsive < 596 ? false : {
                             density: true,
                             fullScreen: true,
                             reload: true,
