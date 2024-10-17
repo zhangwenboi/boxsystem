@@ -1,14 +1,15 @@
-import { DrawerForm, ModalForm, ProCard, ProColumns, ProFormDependency, ProFormDigit, ProFormDigitRange, ProFormSelect, ProFormSlider, ProFormSwitch, ProFormText, ProFormTimePicker, ProTable, StatisticCard } from "@ant-design/pro-components"
-import { EllipsisOutlined } from "@ant-design/icons"
-import { useEffect, useState } from "react"
+import { DrawerForm, ModalForm, ProCard, ProColumns, ProFormCheckbox, ProFormDependency, ProFormDigit, ProFormDigitRange, ProFormGroup, ProFormItem, ProFormItemRender, ProFormList, ProFormSelect, ProFormSlider, ProFormSwitch, ProFormText, ProFormTimePicker, ProTable, StatisticCard } from "@ant-design/pro-components"
+import { CloseCircleOutlined, EllipsisOutlined, PlusCircleOutlined } from "@ant-design/icons"
+import { ReactNode, useEffect, useState } from "react"
 import request from "../../api"
 import { Line } from '@ant-design/charts';
 import RcResizeObserver from 'rc-resize-observer';
 import dayjs from "dayjs"
-import { Dropdown, message } from "antd";
+import { Button, Dropdown, Form, message } from "antd";
 import type { MenuProps, StatisticProps } from 'antd'
 
 import CountUp from "react-countup";
+import { ValidateStatus } from "antd/es/form/FormItem";
 const waitTimer = async (time: number) => {
     return await new Promise((resolve) => {
         setTimeout(() => {
@@ -16,31 +17,55 @@ const waitTimer = async (time: number) => {
         }, time)
     })
 }
+// 获取多个时间段的交际
+
+
 
 const SettingCard = ({ width }) => {
     return <ModalForm<Setting>
         title="设置模式"
         layout="horizontal"
+        modalProps={{
+            destroyOnClose: true,
+        }}
         labelCol={{ span: 8 }}
         request={async () => {
             const res = await request.get<ResponseData<Setting>>('/api/conf_info/')
             if (res.code === 1000) {
-                return res.data
+                const timers = res.data?.time ? res.data?.time?.split(',')?.map((item) => {
+                    return {
+                        time: item?.split('_')
+                    }
+                }) : [{ time: ['00:00', '24:00'] }]
+                if (timers?.length > 0) {
+                    return {
+                        ...res.data,
+                        timers
+                    }
+                } else {
+                    return res.data
+                }
+
             }
             return null
         }}
+
         width={width}
         trigger={
-            <a className="mx-2"> 系统设置 </a>
+            < a className="mx-2" > 系统设置 </a >
         }
         onFinish={async (data) => {
+            const params = data
+            params.timers?.length > 0 && (params.time = params.timers?.map((item) => item?.time?.join('_'))?.join(','))
             const res = await request.post('/api/update_conf/', {
-                data: data
+                data: params
             })
             if (res.code === 1000) {
                 message.success(`修改成功, 稍后生效！`);
+                return true
             } else {
                 message.error('修改失败，请稍后再试');
+                return false
             }
         }}
         submitter={{
@@ -51,26 +76,12 @@ const SettingCard = ({ width }) => {
             },
         }}
     >
-        {/* <ProFormDependency name={['repeat']}  >
-        {
-            ({ repeat }) => {
-                return <ProFormTimePicker.RangePicker
-                    width={'md'}
-                    rules={repeat ? [] : [
-                        {
-                            required: true
-                        }
-                    ]} tooltip="只会在此时间段内运行" name='time' disabled={repeat} label="运行时间" fieldProps={{
-                        format: 'HH:mm'
-                    }} />
-            }
-        }
-    </ProFormDependency> */}
 
         <ProFormSelect name="video_type"
             label="下行流量类型"
             tooltip="下行基本都是省外业务，只是业务不同"
             allowClear={false}
+
             options={[
                 {
                     label: '抖音快手视频',
@@ -92,8 +103,10 @@ const SettingCard = ({ width }) => {
             {
                 ({ video_type }, form) => {
                     const ifVideo = video_type === 'data'
+                    const video_thread = form.getFieldValue('video_thread')
                     const options = new Array(ifVideo ? 10 : 20).fill(0).map((_, index) => ({ label: index + 1 + ' 个线程', value: index + 1 }))
-                    ifVideo && form.setFieldsValue({ video_thread: options.length })
+                    console.log(video_thread)
+                    ifVideo && video_thread > options.length && form.setFieldsValue({ video_thread: options.length })
                     return <ProFormSelect
                         name="video_thread"
                         allowClear={false}
@@ -125,11 +138,28 @@ const SettingCard = ({ width }) => {
             tooltip="每个线程下载时的最大速度(MB/s)"
             width={'md'} />
 
-        {/* <ProFormSwitch name="repeat" label='持续运行' tooltip="开启后将全天运行" fieldProps={{
-        checkedChildren: "开启", unCheckedChildren: "关闭"
-    }} /> */}
 
-    </ModalForm>
+        <ProFormList
+            name="timers"
+            label="运行时间"
+            actionRender={(field, action, defaultActionDom) => {
+                return [
+                    defaultActionDom,
+                    <PlusCircleOutlined onClick={() => action?.add?.()} className="mx-2 active:text-blue-400 hover:text-blue-400" />
+                ]
+            }}
+
+            creatorButtonProps={false}
+            copyIconProps={false}
+            deleteIconProps={{
+                Icon: CloseCircleOutlined,
+                tooltipText: '删除此时间段',
+            }}
+        >
+            <ProFormTimePicker.RangePicker allowClear={false} fieldProps={{ format: "HH:mm", needConfirm: false }} width={'md'} name="time" />
+        </ProFormList>
+
+    </ModalForm >
 }
 
 const formatter: StatisticProps['formatter'] = (data: string) => {
