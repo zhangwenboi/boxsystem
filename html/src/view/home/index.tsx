@@ -27,6 +27,7 @@ const SettingCard = ({ width }) => {
             if (res.code === 1000) {
                 return res.data
             }
+            return null
         }}
         width={width}
         trigger={
@@ -69,6 +70,7 @@ const SettingCard = ({ width }) => {
         <ProFormSelect name="video_type"
             label="下行流量类型"
             tooltip="下行基本都是省外业务，只是业务不同"
+            allowClear={false}
             options={[
                 {
                     label: '抖音快手视频',
@@ -90,13 +92,16 @@ const SettingCard = ({ width }) => {
             {
                 ({ video_type }, form) => {
                     const ifVideo = video_type === 'data'
-                    ifVideo && form.getFieldValue('video_thread') > 6 && form.setFieldsValue({ video_thread: 6 })
+                    const options = new Array(ifVideo ? 10 : 20).fill(0).map((_, index) => ({ label: index + 1 + ' 个线程', value: index + 1 }))
+                    ifVideo && form.setFieldsValue({ video_thread: options.length })
                     return <ProFormSelect
                         name="video_thread"
+                        allowClear={false}
+
                         label={`${ifVideo ? '同时下载线程' : '同时直播线程'}`}
                         tooltip="同时进行几个下载，越多越快"
                         width={'md'}
-                        options={new Array(ifVideo ? 10 : 20).fill(0).map((_, index) => ({ label: index + 1 + ' 个线程', value: index + 1 }))} />
+                        options={options} />
                 }
             }
         </ProFormDependency>
