@@ -32,7 +32,7 @@ const SettingCard = ({ width }) => {
         request={async () => {
             const res = await request.get<ResponseData<Setting>>('/api/conf_info/')
             if (res.code === 1000) {
-                const timers = res.data?.time ? res.data?.time?.split(',')?.map((item) => {
+                const timers = res.data?.time ? (res.data?.time as string).split(',')?.map((item) => {
                     return {
                         time: item?.split('_')
                     }
@@ -139,9 +139,10 @@ const SettingCard = ({ width }) => {
             width={'md'} />
 
 
-        <ProFormList
+        {/* <ProFormList
             name="timers"
             label="运行时间"
+            
             actionRender={(field, action, defaultActionDom) => {
                 return [
                     defaultActionDom,
@@ -157,7 +158,7 @@ const SettingCard = ({ width }) => {
             }}
         >
             <ProFormTimePicker.RangePicker allowClear={false} fieldProps={{ format: "HH:mm", needConfirm: false }} width={'md'} name="time" />
-        </ProFormList>
+        </ProFormList> */}
 
     </ModalForm >
 }
@@ -297,8 +298,6 @@ export default () => {
 
             </ProCard>
         </RcResizeObserver>
-
-
 
     </div>
 }
