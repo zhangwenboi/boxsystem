@@ -19,6 +19,7 @@ const waitTimer = async (time: number) => {
 }
 // 获取多个时间段的交际
 
+let timers = null
 
 
 const SettingCard = ({ width }) => {
@@ -36,7 +37,8 @@ const SettingCard = ({ width }) => {
                     return {
                         time: item?.split('_')
                     }
-                }) : [{ time: ['00:00', '24:00'] }]
+                }) : [{ time: ['00:00', '23:59'] }]
+
                 if (timers?.length > 0) {
                     return {
                         ...res.data,
@@ -56,12 +58,24 @@ const SettingCard = ({ width }) => {
         }
         onFinish={async (data) => {
             const params = data
-            params.timers?.length > 0 && (params.time = params.timers?.map((item) => item?.time?.join('_'))?.join(','))
+            params.timers?.length > 0 && (params.time = params.timers?.map((item) => item?.time.map(s => s.length >= 8 ? s : s + ':00')?.join('_'))?.join(','))
+
             const res = await request.post('/api/update_conf/', {
                 data: params
             })
             if (res.code === 1000) {
-                message.success(`修改成功, 稍后生效！`);
+                message.loading(`修改成功, 正在重启中！稍后将自动刷新刷新页面，如10秒后未自动刷新请手动进行刷新`, -1);
+                setTimeout(() => {
+                    request.get<ResponseData<NetworkSpeed[]>>('/api/network_speed').then((res) => {
+                        if (res.code === 1000) {
+                            timers = null
+                            setTimeout(() => {
+                                window.location.reload()
+                            }, 4000);
+                        }
+                        message.destroy()
+                    })
+                }, 1000);
                 return true
             } else {
                 message.error('修改失败，请稍后再试');
@@ -71,7 +85,30 @@ const SettingCard = ({ width }) => {
         submitter={{
             render(props, dom) {
                 return <div className=" flex gap-x-2 justify-center w-full ">
-                    {dom}
+                    <Button danger onClick={async () => {
+                        const res = await request.post('/api/update_conf/', {
+                            data: {}
+                        })
+                        if (res.code === 1000) {
+                            message.loading(`修改成功, 正在重启中！稍后将自动刷新刷新页面，如10秒后未自动刷新请手动进行刷新`, -1);
+                            setTimeout(() => {
+                                request.get<ResponseData<NetworkSpeed[]>>('/api/network_speed').then((res) => {
+                                    if (res.code === 1000) {
+                                        timers = null
+                                        setTimeout(() => {
+                                            window.location.reload()
+                                        }, 4000);
+                                    }
+                                    message.destroy()
+                                })
+                            }, 1000);
+                            return true
+                        } else {
+                            message.error('修改失败，请稍后再试');
+                            return false
+                        }
+
+                    }}>恢复出厂设置</Button>{dom}
                 </div>
             },
         }}
@@ -105,7 +142,6 @@ const SettingCard = ({ width }) => {
                     const ifVideo = video_type === 'data'
                     const video_thread = form.getFieldValue('video_thread')
                     const options = new Array(ifVideo ? 10 : 20).fill(0).map((_, index) => ({ label: index + 1 + ' 个线程', value: index + 1 }))
-                    console.log(video_thread)
                     ifVideo && video_thread > options.length && form.setFieldsValue({ video_thread: options.length })
                     return <ProFormSelect
                         name="video_thread"
@@ -139,10 +175,10 @@ const SettingCard = ({ width }) => {
             width={'md'} />
 
 
-        {/* <ProFormList
+        <ProFormList
             name="timers"
             label="运行时间"
-            
+
             actionRender={(field, action, defaultActionDom) => {
                 return [
                     defaultActionDom,
@@ -157,8 +193,8 @@ const SettingCard = ({ width }) => {
                 tooltipText: '删除此时间段',
             }}
         >
-            <ProFormTimePicker.RangePicker allowClear={false} fieldProps={{ format: "HH:mm", needConfirm: false }} width={'md'} name="time" />
-        </ProFormList> */}
+            <ProFormTimePicker.RangePicker allowClear={false} fieldProps={{ format: "HH:mm", needConfirm: false }} width={'sm'} name="time" />
+        </ProFormList>
 
     </ModalForm >
 }

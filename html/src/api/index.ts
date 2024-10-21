@@ -44,8 +44,9 @@ const errorHandler = (error: any): Response => {
             noParamUrl = url.substring(0, url.indexOf('?'));
         }
 
-
-        message.error(`请求错误 [${status}]: ${noParamUrl}${errorText}`);
+        if (status !== 502) {
+            message.error(`请求错误 [${status}]: ${noParamUrl}${errorText}`);
+        }
 
     } else if (!response) {
         message.error('您的网络发生异常，无法连接服务器');
