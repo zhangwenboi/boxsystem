@@ -71,7 +71,7 @@ const SettingCard = ({ width }) => {
                             timers = null
                             setTimeout(() => {
                                 window.location.reload()
-                            }, 4000);
+                            }, 8000);
                         }
                         message.destroy()
                     })
@@ -97,7 +97,7 @@ const SettingCard = ({ width }) => {
                                         timers = null
                                         setTimeout(() => {
                                             window.location.reload()
-                                        }, 4000);
+                                        }, 8000);
                                     }
                                     message.destroy()
                                 })

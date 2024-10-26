@@ -26,12 +26,7 @@ export default defineConfig({
         manualChunks: {
           antd: ['antd'],
           'react-dom': ['react-dom'],
-          'ant-design-pro-components': ['@ant-design/pro-components'],
-          'icons': ['@ant-design/icons'],
-          'ant-charts': ['@ant-design/charts'],
-          'react-countup': ['react-countup'],
-          'react-router': ['react-router'],
-          'react-router-dom': ['react-router-dom'],
+
           'umi-request': ['umi-request']
         }
       }
