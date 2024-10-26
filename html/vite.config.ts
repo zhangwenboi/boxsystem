@@ -35,7 +35,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        // 'target': 'http://192.168.1.108:3000',
+        // 'target': 'http://192.168.196.127',
         'target': 'http://10.147.20.45',
         // 'target': 'http://127.0.0.1:3000',
         // 'target': 'http://10.54.0.71:3000',

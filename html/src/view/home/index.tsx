@@ -58,8 +58,10 @@ const SettingCard = ({ width }) => {
         }
         onFinish={async (data) => {
             const params = data
-            params.timers?.length > 0 && (params.time = params.timers?.map((item) => item?.time.map(s => s.length >= 8 ? s : s + ':00')?.join('_'))?.join(','))
-
+            params.timers?.length > 0 && (params.time = params.timers?.map((item) => item?.time.map(s => {
+                const timerS = s.match(/\d{2}\:\d{2}/)?.[0]
+                return timerS + ':00'
+            })?.join('_'))?.join(','))
             const res = await request.post('/api/update_conf/', {
                 data: params
             })
